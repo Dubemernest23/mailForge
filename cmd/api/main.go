@@ -1,79 +1,42 @@
 package main
 
 import (
-	"context"
-	"fmt"
-	"mailForgeApi/internal/config"
-	"mailForgeApi/internal/routes"
-	"net"
-	"net/http"
+	"log"
+	"mailForgeApi/internal/di"
+	"mailForgeApi/internal/server"
 	"os"
-	"os/signal"
-	"syscall"
-	"time"
 
-	"github.com/go-chi/chi"
+	"github.com/joho/godotenv"
 	"go.uber.org/fx"
 )
 
+// func main() {
+// 	if err := godotenv.Load(); err != nil {
+// 		log.Println("[WARN] no .env file found, using system environment")
+// 	}
+
+// 	fx.New(
+// 		di.NewModules(),
+// 		fx.Invoke(server.StartServer),
+// 	).Run()
+// }
+
 func main() {
-	fx.New(
-		fx.Provide(
-			config.NewInitConfig,
-			routes.NewRouter, // <-- your route file plugs in here
-			newServer,
-		),
-		fx.Invoke(startServer),
-	).Run()
-}
-
-func newServer(cfg *config.Config, r *chi.Mux) *http.Server {
-	return &http.Server{
-		Addr:         ":" + cfg.Server.AppPort,
-		Handler:      r,
-		ReadTimeout:  15 * time.Second,
-		WriteTimeout: 15 * time.Second,
-		IdleTimeout:  60 * time.Second,
+	if err := godotenv.Load(); err != nil {
+		log.Println("[WARN] no .env file found, using system environment")
 	}
-}
 
-func startServer(lc fx.Lifecycle, srv *http.Server) {
-	lc.Append(fx.Hook{
-		OnStart: func(ctx context.Context) error {
-			ln, err := net.Listen("tcp", srv.Addr)
-			if err != nil {
-				return err
-			}
-			fmt.Printf("[SERVER] Listening on http://localhost%s\n", srv.Addr)
+	app := fx.New(
+		di.NewModules(),
+		fx.Invoke(server.StartServer),
+	)
 
-			go srv.Serve(ln)
-			go waitForShutdown(srv) // <-- signal listener runs in background
+	app.Run()
 
-			return nil
-		},
-		OnStop: func(ctx context.Context) error {
-			fmt.Println("[SERVER] Shutting down...")
-			return srv.Shutdown(ctx)
-		},
-	})
-}
-
-// waitForShutdown blocks until SIGINT or SIGTERM is received,
-// then triggers a graceful shutdown with a 10s timeout
-func waitForShutdown(srv *http.Server) {
-	quit := make(chan os.Signal, 1)
-	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
-
-	sig := <-quit
-	fmt.Printf("[SERVER] Received signal: %s\n", sig)
-
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel()
-
-	if err := srv.Shutdown(ctx); err != nil {
-		fmt.Printf("[SERVER] Forced shutdown: %v\n", err)
+	if app.Err() != nil {
+		log.Fatalf("[FATAL] %v", app.Err())
 		os.Exit(1)
 	}
 
-	fmt.Println("[SERVER] Shutdown complete")
+	os.Exit(0)
 }

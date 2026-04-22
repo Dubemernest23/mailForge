@@ -13,6 +13,7 @@ type Config struct {
 	Database DatabaseConfig
 	Jwt      JwtConfig
 	Email    EmailConfig
+	DB       DBConfig
 }
 
 type EmailConfig struct {
@@ -54,7 +55,7 @@ func NewInitConfig() *Config {
 			AppName: getENV("APP_NAME", "MailForge"),
 		},
 		Database: DatabaseConfig{
-			DSN: getENV("DB_DSN", "user:password@tcp(localhost:3306)/dbname"),
+			DSN: getENV("DB_DSN", ""),
 		},
 		Email: EmailConfig{
 			SmtpHost: getENV("SMTP_HOST", "smtp.gmail.com"),
@@ -72,6 +73,13 @@ func NewInitConfig() *Config {
 		Jwt: JwtConfig{
 			JwtSecret: getENV("JWT_SECRET", "your_jwt_secret"),
 			JwtExpiry: getENV("JWT_EXPIRY", "24h"),
+		},
+		DB: DBConfig{
+			Host:     getENV("DB_HOST", "localhost"),
+			Port:     func() int { port, _ := strconv.Atoi(getENV("DB_PORT", "3306")); return port }(),
+			User:     getENV("DB_USER", "root"),
+			Password: getENV("DB_PASSWORD", ""),
+			Name:     getENV("DB_NAME", "mailforge_db"),
 		},
 	}
 }
