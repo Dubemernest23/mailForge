@@ -18,13 +18,13 @@ help:
 	@echo "  make migrate-up      - Run all pending migrations"
 	@echo "  make migrate-down    - Rollback last migration"
 	@echo "  make migrate-status  - Show migration status"
-	@echo "  make db-reset        - ⚠️  Reset database (drop + recreate + migrate)"
+	@echo "  make db-reset        - Reset database (drop + recreate + migrate)"
 
 dev:
 	air
 
 build:
-	go build -o bin/mailforge ./cmd/api/...
+	go build -o bin/mailforge ./cmd/api
 
 test:
 	go test ./... -v
@@ -33,33 +33,30 @@ lint:
 	golangci-lint run ./...
 
 clean:
-	rm -rf bin/ tmp/
 	go clean
-
-# ── Database ────────────────────────────────────────────────
 
 db-create:
 	@echo "Creating database $(DB_NAME) on $(DB_HOST)..."
 	mysql -h $(DB_HOST) -P $(DB_PORT) -u $(DB_USER) -p$(DB_PASSWORD) \
 		-e "CREATE DATABASE IF NOT EXISTS $(DB_NAME) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
-	@echo "✅ Done."
+	@echo "Done."
 
 migrate-up:
 	@echo "Running migrations..."
-	go run ./cmd/migrate/... up
+	go run ./cmd/migration up
 
 migrate-down:
 	@echo "Rolling back last migration..."
-	go run ./cmd/migrate/... down
+	go run ./cmd/migration down
 
 migrate-status:
-	go run ./cmd/migrate/... status
+	go run ./cmd/migration status
 
 db-reset:
-	@echo "⚠️  Resetting database $(DB_NAME) on $(DB_HOST)..."
+	@echo "Resetting database $(DB_NAME) on $(DB_HOST)..."
 	@read -p "Are you sure? [y/N] " confirm && [ "$$confirm" = "y" ] || exit 1
 	mysql -h $(DB_HOST) -P $(DB_PORT) -u $(DB_USER) -p$(DB_PASSWORD) \
 		-e "DROP DATABASE IF EXISTS $(DB_NAME);"
 	@$(MAKE) db-create
 	@$(MAKE) migrate-up
-	@echo "✅ Database reset complete."
+	@echo "Database reset complete."

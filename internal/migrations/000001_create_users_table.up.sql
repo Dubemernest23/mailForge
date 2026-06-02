@@ -3,18 +3,18 @@ CREATE TABLE users (
     public_id CHAR(36) NOT NULL UNIQUE,
     email VARCHAR(255) NOT NULL,
     password_hash VARCHAR(255) NOT NULL,
-    email_verified_at DATETIME NULL,
-    verification_token VARCHAR(255) NULL,
-    verification_token_expires_at DATETIME NULL,
-    is_verified BOOLEAN NOT NULL DEFAULT FALSE,
     role ENUM('user', 'admin', 'super_admin') NOT NULL DEFAULT 'user',
     status ENUM('active', 'suspended', 'deleted') NOT NULL DEFAULT 'active',
     last_login_at DATETIME NULL,
     failed_login_attempts INT UNSIGNED NOT NULL DEFAULT 0,
+    password_reset_token VARCHAR(255) NULL,
+    password_reset_expires_at DATETIME NULL,
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+
     UNIQUE KEY uniq_users_email (email),
-    UNIQUE KEY uniq_users_verification_token (verification_token)
+    UNIQUE KEY uniq_users_public_id (public_id),
+    UNIQUE KEY uniq_users_password_reset_token (password_reset_token)
 
 ) ENGINE=InnoDB
   DEFAULT CHARSET=utf8mb4

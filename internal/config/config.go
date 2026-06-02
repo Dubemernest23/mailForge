@@ -9,7 +9,8 @@ import (
 )
 
 // Config is the configuration struct for the application.
-// Config, EmailConfig, JwtConfig, DatabaseConfig, and ServerConfig are all used to hold the configuration values for the application.
+// Config, EmailConfig, JwtConfig, DatabaseConfig, and ServerConfig are all used to hold
+//  the configuration values for the application.
 
 type Config struct {
 	Server   ServerConfig
@@ -71,8 +72,8 @@ func NewInitConfig() *Config {
 			DSN: getDatabaseDSN(db),
 		},
 		Email: EmailConfig{
-			SmtpHost: getENV("SMTP_HOST", "smtp.gmail.com"),
-			SmtpPort: getEnvInt("SMTP_PORT", 587),
+			SmtpHost:     getENV("SMTP_HOST", "smtp.gmail.com"),
+			SmtpPort:     getEnvInt("SMTP_PORT", 587),
 			SmtpUser:     getENV("SMTP_USER", "your-email@gmail.com"),
 			SmtpPassword: getENV("SMTP_PASSWORD", "your-app-password"),
 			SmtpFrom:     getENV("SMTP_FROM", "noreply@mailforge.com"),

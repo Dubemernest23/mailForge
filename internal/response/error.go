@@ -12,6 +12,20 @@ import (
 
 const ContentTypeJSON = "application/json"
 
+const (
+	CodeBadRequest          = "bad_request"
+	CodeUnauthorized        = "unauthorized"
+	CodeForbidden           = "forbidden"
+	CodeRouteNotFound       = "route_not_found"
+	CodeMethodNotAllowed    = "method_not_allowed"
+	CodeConflict            = "conflict"
+	CodeUnprocessableEntity = "unprocessable_entity"
+	CodeTooManyRequests     = "too_many_requests"
+	CodeInternalServerError = "internal_server_error"
+	CodeNotImplemented      = "not_implemented"
+	CodeServiceUnavailable  = "service_unavailable"
+)
+
 type ErrorBody struct {
 	Success   bool        `json:"success"`
 	Error     ErrorDetail `json:"error"`
@@ -28,6 +42,18 @@ type AppError struct {
 	Code       string
 	Message    string
 	Err        error
+}
+
+type HandlerFunc func(w http.ResponseWriter, r *http.Request) error
+
+func (fn HandlerFunc) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	if err := fn(w, r); err != nil {
+		HandleError(w, r, err)
+	}
+}
+
+func Handler(fn HandlerFunc) http.HandlerFunc {
+	return fn.ServeHTTP
 }
 
 func NewAppError(statusCode int, code string, message string) *AppError {
@@ -86,25 +112,45 @@ func HandleError(w http.ResponseWriter, r *http.Request, err error) {
 }
 
 func BadRequest(w http.ResponseWriter, r *http.Request, message string) {
-	WriteError(w, r, constants.StatusBadRequest, "bad_request", message)
+	WriteError(w, r, constants.StatusBadRequest, CodeBadRequest, message)
 }
 
 func Unauthorized(w http.ResponseWriter, r *http.Request, message string) {
-	WriteError(w, r, constants.StatusUnauthorized, "unauthorized", message)
+	WriteError(w, r, constants.StatusUnauthorized, CodeUnauthorized, message)
 }
 
 func Forbidden(w http.ResponseWriter, r *http.Request, message string) {
-	WriteError(w, r, constants.StatusForbidden, "forbidden", message)
+	WriteError(w, r, constants.StatusForbidden, CodeForbidden, message)
 }
 
 func NotFound(w http.ResponseWriter, r *http.Request) {
-	WriteError(w, r, constants.StatusNotFound, "route_not_found", "route not found")
+	WriteError(w, r, constants.StatusNotFound, CodeRouteNotFound, "route not found")
 }
 
 func MethodNotAllowed(w http.ResponseWriter, r *http.Request) {
-	WriteError(w, r, constants.StatusMethodNotAllowed, "method_not_allowed", "method not allowed")
+	WriteError(w, r, constants.StatusMethodNotAllowed, CodeMethodNotAllowed, "method not allowed")
+}
+
+func Conflict(w http.ResponseWriter, r *http.Request, message string) {
+	WriteError(w, r, constants.StatusConflict, CodeConflict, message)
+}
+
+func UnprocessableEntity(w http.ResponseWriter, r *http.Request, message string) {
+	WriteError(w, r, constants.StatusUnprocessableEntity, CodeUnprocessableEntity, message)
+}
+
+func TooManyRequests(w http.ResponseWriter, r *http.Request, message string) {
+	WriteError(w, r, constants.StatusTooManyRequests, CodeTooManyRequests, message)
 }
 
 func InternalServerError(w http.ResponseWriter, r *http.Request) {
-	WriteError(w, r, constants.StatusInternalServerError, "internal_server_error", "an unexpected error occurred")
+	WriteError(w, r, constants.StatusInternalServerError, CodeInternalServerError, "an unexpected error occurred")
+}
+
+func NotImplemented(w http.ResponseWriter, r *http.Request) {
+	WriteError(w, r, constants.StatusNotImplemented, CodeNotImplemented, "not implemented")
+}
+
+func ServiceUnavailable(w http.ResponseWriter, r *http.Request) {
+	WriteError(w, r, constants.StatusServiceUnavailable, CodeServiceUnavailable, "service unavailable")
 }

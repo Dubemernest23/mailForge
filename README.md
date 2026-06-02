@@ -1,12 +1,12 @@
 # MailForge
 
-MailForge is an early-stage email campaign API built in Go. The current codebase focuses on the backend foundation: application bootstrapping, dependency injection, configuration loading, database connectivity, request logging, HTTP server lifecycle management, a health route, and embedded SQL migrations.
+MailForge is an early-stage email campaign API built in Go. The codebase currently focuses on the backend foundation: application bootstrapping, dependency injection, configuration loading, MySQL connectivity, request logging, uniform HTTP error responses, server lifecycle management, a health route, embedded SQL migrations, and focused tests around the foundation.
 
 The feature modules for authentication, campaigns, and organization are scaffolded, but their business logic and HTTP endpoints are not implemented yet.
 
 ## Tech Stack
 
-- Go
+- Go 1.26.1
 - Chi for HTTP routing
 - Uber Fx for dependency injection and application lifecycle
 - Bun ORM for MySQL database access
@@ -18,17 +18,22 @@ The feature modules for authentication, campaigns, and organization are scaffold
 
 - Application startup from `cmd/api/main.go`
 - Environment configuration from `.env` or system environment variables
+- Database DSN building from `DB_*` fields, with optional `DB_DSN` override
 - Fx dependency container in `internal/di`
 - MySQL connection setup through Bun
 - Connection pool configuration
 - Bun query debugging in non-production environments
 - Structured application logger
 - Request logging middleware
-- Chi router with request IDs and panic recovery
+- Custom panic recovery middleware
+- Shared HTTP status constants in `internal/constants`
+- Uniform JSON error helpers in `internal/response`
+- Chi router with request IDs and JSON 404/405 handlers
 - `GET /health` endpoint
 - Graceful HTTP server shutdown
 - Embedded SQL migrations
 - Standalone migration command in `cmd/migration`
+- Focused tests for config and router behavior
 
 ## Not Implemented Yet
 
@@ -43,15 +48,14 @@ These areas are planned or scaffolded, but not currently functional:
 - Subscriber and list endpoints
 - Organization behavior
 - Email provider or SMTP sending service
-- Request and response DTOs
+- Request and response DTOs for feature modules
 - Domain/Bun model structs
-- Tests
 
 ## Getting Started
 
-1. Install Go.
+1. Install Go 1.26.1 or a compatible local toolchain.
 2. Create a `.env` file from `.env.example`.
-3. Make sure `DB_DSN` is configured, because the current database code connects through `DB_DSN`.
+3. Configure the MySQL database values.
 4. Run the API:
 
 ```bash
@@ -70,15 +74,16 @@ APP_ENV=development
 APP_PORT=3010
 APP_NAME=MailForge
 
-# Active database connection value used by the app
-DB_DSN=root:yourpassword@tcp(localhost:3306)/mailforge_db?parseTime=true
-
-# Additional database fields currently loaded into config
+# MySQL Database
 DB_HOST=localhost
 DB_PORT=3306
 DB_USER=root
 DB_PASSWORD=yourpassword
 DB_NAME=mailforge_db
+DB_CHARSET=utf8mb4
+
+# Optional DSN override. If set, this takes precedence over the DB_* fields above.
+DB_DSN=root:yourpassword@tcp(localhost:3306)/mailforge_db?charset=utf8mb4&parseTime=true
 
 # JWT settings loaded by config, not yet used by implemented auth routes
 JWT_SECRET=supersecretkeychangethisinproduction
@@ -92,11 +97,9 @@ SMTP_PASSWORD=your-app-password
 SMTP_FROM=noreply@mailforge.com
 ```
 
-Note: `.env.example` currently documents some values that do not perfectly match the code yet, such as `JWT_EXPIRY_HOURS` instead of `JWT_EXPIRY`. The app currently reads `JWT_EXPIRY`.
-
 ## API
 
-The only registered endpoint right now is:
+The only registered business endpoint right now is:
 
 ```http
 GET /health
@@ -110,6 +113,19 @@ Example response:
 }
 ```
 
+Unknown routes and unsupported methods return a uniform JSON error response:
+
+```json
+{
+  "success": false,
+  "error": {
+    "code": "route_not_found",
+    "message": "route not found"
+  },
+  "request_id": "generated-request-id"
+}
+```
+
 Campaign, auth, subscriber, list, and organization routes are not registered yet.
 
 ## Project Structure
@@ -118,20 +134,24 @@ Campaign, auth, subscriber, list, and organization routes are not registered yet
 mailForge/
 |-- cmd/
 |   |-- api/
-|   |   +-- main.go                 # API entry point and Fx bootstrap
+|   |   +-- main.go
 |   +-- migration/
-|       +-- main.go                 # Migration CLI
+|       +-- main.go
 |-- internal/
 |   |-- config/
-|   |   +-- config.go               # Environment config loading
+|   |   |-- config.go
+|   |   +-- config_test.go
+|   |-- constants/
+|   |   +-- http_status_code.go
 |   |-- database/
-|   |   +-- database.go             # MySQL/Bun database setup
+|   |   +-- database.go
 |   |-- di/
-|   |   +-- container.go            # Fx dependency wiring
+|   |   +-- container.go
 |   |-- middleware/
-|   |   +-- logger.go               # Structured request logger
+|   |   |-- logger.go
+|   |   +-- recoverer.go
 |   |-- migrations/
-|   |   |-- ebed.go                 # Embedded SQL migration filesystem
+|   |   |-- embed.go
 |   |   |-- 000001_create_users_table.up.sql
 |   |   |-- 000001_create_users_table.down.sql
 |   |   |-- 000002_create_lists_table.up.sql
@@ -144,22 +164,25 @@ mailForge/
 |   |   +-- 000005_create_campaigns_table.down.sql
 |   |-- modules/
 |   |   |-- auth/
-|   |   |   |-- auth.handler.go      # Scaffold only
-|   |   |   |-- auth.repo.go         # Scaffold only
-|   |   |   +-- auth.service.go      # Scaffold only
+|   |   |   |-- auth.handler.go
+|   |   |   |-- auth.repo.go
+|   |   |   +-- auth.service.go
 |   |   |-- campaign/
-|   |   |   |-- campaign.handler.go  # Scaffold only
-|   |   |   |-- campaign.repo.go     # Scaffold only
-|   |   |   +-- campaign.service.go  # Scaffold only
+|   |   |   |-- campaign.handler.go
+|   |   |   |-- campaign.repo.go
+|   |   |   +-- campaign.service.go
 |   |   +-- organization/
-|   |       +-- organization.repo.go # Scaffold only
+|   |       +-- organization.repo.go
+|   |-- response/
+|   |   +-- error.go
 |   |-- routes/
-|   |   +-- router.go               # Chi router and health route
+|   |   |-- router.go
+|   |   +-- router_test.go
 |   +-- server/
-|       +-- server.go               # HTTP server lifecycle
+|       +-- server.go
 |-- pkg/
 |   +-- logger/
-|       +-- logger.go               # Zap logger wrapper
+|       +-- logger.go
 |-- .air.toml
 |-- .env.example
 |-- .gitignore
@@ -167,6 +190,7 @@ mailForge/
 |-- go.mod
 |-- go.sum
 |-- Makefile
+|-- walkthrough.md
 +-- README.md
 ```
 
@@ -191,18 +215,26 @@ The dependency graph currently provides:
 - `server.NewServer`
 - database shutdown hook
 
-The router currently provides global middleware and the health endpoint only. Feature modules are present as folders, but they are not wired into the container or router.
+The router currently provides global middleware, the health endpoint, uniform JSON not-found and method-not-allowed handlers, and custom panic recovery. Feature modules are present as folders, but they are not wired into the container or router.
 
 ## Database And Migrations
 
 The project uses MySQL through Bun. SQL migrations are embedded from `internal/migrations`.
 
-Run the migration command directly with:
+Run migrations with:
 
 ```bash
 go run ./cmd/migration up
 go run ./cmd/migration down
 go run ./cmd/migration status
+```
+
+Or use the Makefile:
+
+```bash
+make migrate-up
+make migrate-down
+make migrate-status
 ```
 
 The schema currently includes migrations for:
@@ -213,11 +245,9 @@ The schema currently includes migrations for:
 - `list_subscribers`
 - `campaigns`
 
-Important current migration note: the `000004_create_list_subscribers_table` migration appears to be reversed. The `.up.sql` file currently drops the table, while the `.down.sql` file creates it. That should be fixed before relying on migrations in a real database.
+The `list_subscribers` migration direction has been corrected: the up migration creates the join table, and the down migration drops it.
 
 ## Makefile
-
-The Makefile includes commands for development, build, tests, linting, cleanup, database creation, migrations, and database reset.
 
 Common commands:
 
@@ -226,18 +256,38 @@ make dev
 make build
 make test
 make lint
+make migrate-up
+make migrate-down
+make migrate-status
 ```
 
-Current note: the migration targets in the Makefile reference `./cmd/migrate/...`, but the actual migration command lives at `./cmd/migration`. Use the direct `go run ./cmd/migration ...` commands until the Makefile is corrected.
+The migration targets point to the current `cmd/migration` command.
+
+## Tests
+
+Run all tests with:
+
+```bash
+go test ./...
+```
+
+Current test coverage includes:
+
+- Config DSN override behavior
+- Config DSN construction from split DB fields
+- Integer fallback handling for invalid config values
+- Health route response
+- Uniform JSON 404 response
+- Uniform JSON 405 response
 
 ## Development Status
 
-MailForge currently has a solid backend skeleton, but not a complete product API. The next useful development steps are:
+MailForge has a stronger backend foundation now, but it is not a complete product API yet. The next useful development steps are:
 
-1. Fix migration/config/tooling mismatches.
-2. Add Bun model structs.
-3. Implement auth repository, service, handler, and routes.
-4. Add JWT middleware.
+1. Add Bun model structs for the migrated tables.
+2. Implement auth repository, service, handler, and routes.
+3. Add password hashing and JWT creation.
+4. Add JWT middleware for protected routes.
 5. Implement list and subscriber management.
 6. Implement campaign CRUD.
-7. Add tests.
+7. Add service and handler tests as each module becomes functional.
