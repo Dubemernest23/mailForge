@@ -10,17 +10,6 @@ import (
 	"go.uber.org/fx"
 )
 
-// func main() {
-// 	if err := godotenv.Load(); err != nil {
-// 		log.Println("[WARN] no .env file found, using system environment")
-// 	}
-
-// 	fx.New(
-// 		di.NewModules(),
-// 		fx.Invoke(server.StartServer),
-// 	).Run()
-// }
-
 func main() {
 	if err := godotenv.Load(); err != nil {
 		log.Println("[WARN] no .env file found, using system environment")
