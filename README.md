@@ -171,8 +171,6 @@ mailForge/
 |   |   |   |-- campaign.handler.go
 |   |   |   |-- campaign.repo.go
 |   |   |   +-- campaign.service.go
-|   |   +-- organization/
-|   |       +-- organization.repo.go
 |   |-- response/
 |   |   +-- error.go
 |   |-- routes/

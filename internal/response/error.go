@@ -5,7 +5,7 @@ import (
 	"errors"
 	"net/http"
 
-	chimiddleware "github.com/go-chi/chi/middleware"
+	chimiddleware "github.com/go-chi/chi/v5/middleware"
 
 	"mailForgeApi/internal/constants"
 )

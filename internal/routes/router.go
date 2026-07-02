@@ -4,8 +4,8 @@ package routes
 import (
 	"net/http"
 
-	"github.com/go-chi/chi"
-	chimiddleware "github.com/go-chi/chi/middleware"
+	"github.com/go-chi/chi/v5"
+	chimiddleware "github.com/go-chi/chi/v5/middleware"
 
 	"mailForgeApi/internal/constants"
 	"mailForgeApi/internal/middleware"

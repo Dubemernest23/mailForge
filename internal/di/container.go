@@ -1,3 +1,5 @@
+// internal/di/container.go
+
 package di
 
 import (

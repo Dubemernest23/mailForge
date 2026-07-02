@@ -10,7 +10,7 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/go-chi/chi"
+	"github.com/go-chi/chi/v5"
 	"go.uber.org/fx"
 
 	"mailForgeApi/internal/config"

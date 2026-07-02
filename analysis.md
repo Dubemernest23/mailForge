@@ -282,12 +282,6 @@ Campaign files use:
 package campaign
 ```
 
-Organization files use:
-
-```go
-package organization
-```
-
 These modules are still scaffolds only. They are not wired into Fx or the router yet.
 
 ## Tooling
