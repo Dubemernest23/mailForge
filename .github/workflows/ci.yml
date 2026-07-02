@@ -47,9 +47,9 @@ jobs:
           DB_NAME: mailforge_test
 
       - name: Lint
-        uses: golangci/golangci-lint-action@v6
-        with:
-          version: latest
+        run: |
+          go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
+          golangci-lint run ./...
 
       - name: Test
         run: go test ./... -race -cover
