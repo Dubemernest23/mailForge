@@ -6,7 +6,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	chimiddleware "github.com/go-chi/chi/middleware"
+	chimiddleware "github.com/go-chi/chi/v5/middleware"
 
 	"mailForgeApi/internal/constants"
 	"mailForgeApi/internal/response"
