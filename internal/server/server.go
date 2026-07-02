@@ -2,6 +2,7 @@ package server
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net"
 	"net/http"
@@ -34,7 +35,11 @@ func StartServer(lc fx.Lifecycle, srv *http.Server) {
 				return err
 			}
 			fmt.Printf("[SERVER] Listening on http://localhost%s\n", srv.Addr)
-			go srv.Serve(ln)
+			go func() {
+				if err := srv.Serve(ln); err != nil && !errors.Is(err, http.ErrServerClosed) {
+					fmt.Printf("[SERVER] Serve error: %v\n", err)
+				}
+			}()
 			go waitForShutdown(srv)
 			return nil
 		},

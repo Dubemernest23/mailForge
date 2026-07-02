@@ -1,6 +1,7 @@
 package logger
 
 import (
+	"fmt"
 	"os"
 	"time"
 
@@ -81,7 +82,11 @@ func (l *Logger) With(fields ...zap.Field) *Logger {
 	return &Logger{zap: l.zap.With(fields...)}
 }
 
-// Sync flushes any buffered log entries — call this on app shutdown
+// Sync flushes any buffered log entries — call this on app shutdown.
+// Sync errors on stdout are common/benign on Linux (e.g. "invalid argument"
+// when stdout is a pipe/terminal), so this logs rather than propagating.
 func (l *Logger) Sync() {
-	l.zap.Sync()
+	if err := l.zap.Sync(); err != nil {
+		fmt.Fprintf(os.Stderr, "[LOGGER] sync failed: %v\n", err)
+	}
 }
