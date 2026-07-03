@@ -23,7 +23,7 @@ func NewDatabase(cfg *config.Config, log *logger.Logger) (*bun.DB, error) {
 	// 	zap.String("port", fmt.Sprintf("%d", cfg.DB.Port)),
 	// 	zap.String("name", cfg.DB.Name),
 	// )
-	sqlDB, err := sql.Open("mysql", cfg.Database.DSN)
+	sqlDB, err := sql.Open("mysql", cfg.DB.DSN())
 
 	if err != nil {
 		return nil, fmt.Errorf("failed to open database: %w", err)

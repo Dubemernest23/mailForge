@@ -48,3 +48,5 @@ migrations/*.tmp
 # Build output
 /dist
 /bin
+keys/private.pem
+keys/public.pem

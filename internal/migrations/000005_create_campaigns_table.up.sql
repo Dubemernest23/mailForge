@@ -4,16 +4,16 @@ CREATE TABLE campaigns (
     public_id CHAR(36) NOT NULL UNIQUE,
     list_id BIGINT UNSIGNED NULL,
     name VARCHAR(255) NOT NULL,
-    subject VARCHAR(255) NOT NULL,
-    preview_text VARCHAR(255) NOT NULL,
-    body LONGTEXT NOT NULL,
+    subject VARCHAR(500) NOT NULL,
+    preview_text VARCHAR(500) NOT NULL,
+    html_body     LONGTEXT NOT NULL,
+    plain_body    LONGTEXT NOT NULL,
     status ENUM('draft', 'scheduled', 'sending', 'sent', 'cancelled')
         NOT NULL DEFAULT 'draft',
-    scheduled_at DATETIME NULL,
-    started_at DATETIME NULL,
-    completed_at DATETIME NULL,
-    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    scheduled_at  DATETIME NULL,
+    sent_at       DATETIME NULL,
+    created_at    DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at    DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 
     -- Constraints
     CONSTRAINT fk_campaigns_user
