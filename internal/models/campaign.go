@@ -19,7 +19,7 @@ type Campaign struct {
 	PreviewText string        `bun:"preview_text"`
 	HtmlBody    string        `bun:"html_body"`
 	PlainBody   string        `bun:"plain_body"`
-	Status      string        `bun:"status,notnull,default:'draft'"`
+	Status      string        `bun:"status,notnull"`
 	ScheduledAt sql.NullTime  `bun:"scheduled_at"`
 	SentAt      sql.NullTime  `bun:"sent_at"`
 	CreatedAt   time.Time     `bun:"created_at,notnull"`

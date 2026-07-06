@@ -9,11 +9,14 @@ CREATE TABLE tracking_events (
     user_agent    TEXT,
     created_at    DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
-    CONSTRAINT fk_send_jobs_subscriber FOREIGN KEY (subscriber_id) REFERENCES subscriber(id) ON DELETE SET NULL,
-    CONSTRAINT fk_send_jobs_campaign FOREIGN KEY (campaign_id) REFERENCES campaigns(id) ON DELETE SET NULL
-
+    CONSTRAINT fk_tracking_events_subscriber FOREIGN KEY (subscriber_id) REFERENCES subscribers(id) ON DELETE RESTRICT,
+    CONSTRAINT fk_tracking_events_campaign FOREIGN KEY (campaign_id) REFERENCES campaigns(id) ON DELETE CASCADE,
+    
     UNIQUE KEY uniq_user_tracking_pub_id (public_id),
-    INDEX idx_send_jobs_status (status),
+
+    INDEX idx_tracking_events_campaign_id (campaign_id),
+    INDEX idx_tracking_events_subscriber_id (subscriber_id),
+    INDEX idx_tracking_events_event_type (event_type),
     INDEX idx_created_at (created_at)
 
 )  ENGINE=InnoDB

@@ -5,9 +5,9 @@ CREATE TABLE campaigns (
     list_id BIGINT UNSIGNED NULL,
     name VARCHAR(255) NOT NULL,
     subject VARCHAR(500) NOT NULL,
-    preview_text VARCHAR(500) NOT NULL,
-    html_body     LONGTEXT NOT NULL,
-    plain_body    LONGTEXT NOT NULL,
+    preview_text VARCHAR(500) NULL,
+    html_body     LONGTEXT  NULL,
+    plain_body    LONGTEXT  NULL,
     status ENUM('draft', 'scheduled', 'sending', 'sent', 'cancelled')
         NOT NULL DEFAULT 'draft',
     scheduled_at  DATETIME NULL,

@@ -7,14 +7,14 @@ import (
 )
 
 type ListSubscriber struct {
-	bun.BaseModel `bun:"table:list_subscriber,alias:ls"`
+	bun.BaseModel `bun:"table:list_subscribers,alias:ls"`
 
-	ListID       uint64    `bun:"list_id,notnull"`
-	SubscriberID uint64    `bun:"subscriber_id,notnull"`
-	Status       string    `bun:"status,notnull,default:'subscribed'"`
+	ListID       uint64    `bun:"list_id,pk"`
+	SubscriberID uint64    `bun:"subscriber_id,pk"`
+	Status       string    `bun:"status,notnull"`
 	CreatedAt    time.Time `bun:"created_at,notnull"`
-	UpdatedAt    time.Time `bun:"updated_At,notnull"`
+	UpdatedAt    time.Time `bun:"updated_at,notnull"`
 
-	List       *List       `bun:"rel:belong-to,join:list_id=id"`
-	Subscriber *Subscriber `bun:"rel:belong-to,join:subscriber_id=id"`
+	List       *List       `bun:"rel:belongs-to,join:list_id=id"`
+	Subscriber *Subscriber `bun:"rel:belongs-to,join:subscriber_id=id"`
 }

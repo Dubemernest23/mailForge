@@ -14,9 +14,16 @@ CREATE TABLE send_jobs (
     UNIQUE KEY uniq_send_jobs_public_id (public_id),
     INDEX idx_send_jobs_status (status),
     INDEX idx_send_jobs_campaign_id (campaign_id),
+    INDEX idx_send_jobs_subscriber_id (subscriber_id),
+    
+    -- send_jobs: if campaign deleted, delete its jobs too
+    CONSTRAINT fk_send_jobs_campaign 
+        FOREIGN KEY (campaign_id) REFERENCES campaigns(id) ON DELETE CASCADE,
 
-    CONSTRAINT fk_send_jobs_subscriber FOREIGN KEY (subscriber_id) REFERENCES subscriber(id) ON DELETE SET NULL,
-    CONSTRAINT fk_send_jobs_campaign FOREIGN KEY (campaign_id) REFERENCES campaigns(id) ON DELETE SET NULL
+    -- send_jobs: subscribers are never hard deleted, so RESTRICT is safe
+    -- It prevents hard-deleting a subscriber who has send job history
+    CONSTRAINT fk_send_jobs_subscriber 
+        FOREIGN KEY (subscriber_id) REFERENCES subscribers(id) ON DELETE RESTRICT
 
 ) ENGINE=InnoDB
   DEFAULT CHARSET=utf8mb4

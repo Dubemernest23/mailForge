@@ -7,7 +7,7 @@ import (
 )
 
 type List struct {
-	bun.BaseModel `bun:"table:lists, alias:l"`
+	bun.BaseModel `bun:"table:lists,alias:l"`
 
 	ID          uint64    `bun:"id,pk,autoincrement"`
 	PublicID    string    `bun:"public_id,notnull"`
