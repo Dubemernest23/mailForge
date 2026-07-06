@@ -13,11 +13,10 @@ import (
 //  the configuration values for the application.
 
 type Config struct {
-	Server   ServerConfig
-	Database DatabaseConfig
-	Jwt      JwtConfig
-	Email    EmailConfig
-	DB       DBConfig
+	Server ServerConfig
+	Jwt    JwtConfig
+	Email  EmailConfig
+	DB     DBConfig
 }
 
 type EmailConfig struct {
@@ -29,7 +28,7 @@ type EmailConfig struct {
 }
 
 type JwtConfig struct {
-	JwtSecret string
+	JwtSecret string // we will change the jwt struct since we are moving to RS256
 	JwtExpiry string
 }
 
@@ -42,8 +41,21 @@ type DBConfig struct {
 	Charset  string
 }
 
-type DatabaseConfig struct {
-	DSN string
+func (d DBConfig) DSN() string {
+
+	cfg := mysql.Config{
+		User:                 d.User,
+		Passwd:               d.Password,
+		Net:                  "tcp",
+		Addr:                 fmt.Sprintf("%s:%d", d.Host, d.Port),
+		DBName:               d.Name,
+		ParseTime:            true,
+		AllowNativePasswords: true,
+		Params: map[string]string{
+			"charset": d.Charset,
+		},
+	}
+	return cfg.FormatDSN()
 }
 
 type ServerConfig struct {
@@ -53,36 +65,31 @@ type ServerConfig struct {
 }
 
 func NewInitConfig() *Config {
-	db := DBConfig{
-		Host:     getENV("DB_HOST", "localhost"),
-		Port:     getEnvInt("DB_PORT", 3306),
-		User:     getENV("DB_USER", "root"),
-		Password: getENV("DB_PASSWORD", ""),
-		Name:     getENV("DB_NAME", "mailforge_db"),
-		Charset:  getENV("DB_CHARSET", "utf8mb4"),
-	}
-
 	return &Config{
 		Server: ServerConfig{
 			AppEnv:  getENV("APP_ENV", "development"),
 			AppPort: getENV("APP_PORT", "3010"),
 			AppName: getENV("APP_NAME", "MailForge"),
 		},
-		Database: DatabaseConfig{
-			DSN: getDatabaseDSN(db),
-		},
 		Email: EmailConfig{
-			SmtpHost:     getENV("SMTP_HOST", "smtp.gmail.com"),
-			SmtpPort:     getEnvInt("SMTP_PORT", 587),
-			SmtpUser:     getENV("SMTP_USER", "your-email@gmail.com"),
-			SmtpPassword: getENV("SMTP_PASSWORD", "your-app-password"),
+			SmtpHost:     getENV("SMTP_HOST", "localhost"), // was smtp.gmail.com
+			SmtpPort:     getEnvInt("SMTP_PORT", 1025),     // was 587
+			SmtpUser:     getENV("SMTP_USER", ""),          // was placeholder
+			SmtpPassword: getENV("SMTP_PASSWORD", ""),      // was placeholder
 			SmtpFrom:     getENV("SMTP_FROM", "noreply@mailforge.com"),
 		},
 		Jwt: JwtConfig{
 			JwtSecret: getENV("JWT_SECRET", "your_jwt_secret"),
 			JwtExpiry: getENV("JWT_EXPIRY", "24h"),
 		},
-		DB: db,
+		DB: DBConfig{
+			Host:     getENV("DB_HOST", "localhost"),
+			Port:     getEnvInt("DB_PORT", 3306),
+			User:     getENV("DB_USER", "root"),
+			Password: getENV("DB_PASSWORD", ""),
+			Name:     getENV("DB_NAME", "mailforge_db"),
+			Charset:  getENV("DB_CHARSET", "utf8mb4"),
+		},
 	}
 }
 
@@ -105,25 +112,4 @@ func getEnvInt(key string, fallback int) int {
 	}
 
 	return parsed
-}
-
-func getDatabaseDSN(db DBConfig) string {
-	if dsn := getENV("DB_DSN", ""); dsn != "" {
-		return dsn
-	}
-
-	cfg := mysql.Config{
-		User:                 db.User,
-		Passwd:               db.Password,
-		Net:                  "tcp",
-		Addr:                 fmt.Sprintf("%s:%d", db.Host, db.Port),
-		DBName:               db.Name,
-		ParseTime:            true,
-		AllowNativePasswords: true,
-		Params: map[string]string{
-			"charset": db.Charset,
-		},
-	}
-
-	return cfg.FormatDSN()
 }

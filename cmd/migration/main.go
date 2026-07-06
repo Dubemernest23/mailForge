@@ -23,7 +23,7 @@ func main() {
 
 	cfg := config.NewInitConfig()
 
-	sqlDB, err := sql.Open("mysql", cfg.Database.DSN)
+	sqlDB, err := sql.Open("mysql", cfg.DB.DSN())
 	if err != nil {
 		fmt.Printf("failed to connect: %v\n", err)
 		os.Exit(1)

@@ -241,7 +241,7 @@ All tables live in MySQL. Struct tags use Bun conventions. Every table has `crea
 CREATE TABLE users (
     id            BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     public_id     VARCHAR(36) NOT NULL UNIQUE,
-    name          VARCHAR(255) NOT NULL,
+    username          VARCHAR(255) NOT NULL UNIQUE,
     email         VARCHAR(255) NOT NULL UNIQUE,
     password_hash VARCHAR(255) NOT NULL,
     role          ENUM('user', 'moderator', 'super_admin') NOT NULL DEFAULT 'user',

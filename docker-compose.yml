@@ -1,33 +1,55 @@
-# docker-compose.yml
 services:
   mysql:
     image: mysql:8.0
+    container_name: mailforge_mysql
+    restart: unless-stopped
     environment:
       MYSQL_ROOT_PASSWORD: secret
       MYSQL_DATABASE: mailforge
     ports:
-      - "3306:3306"
+      - "3308:3306"
     volumes:
       - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   mysql_test:
     image: mysql:8.0
+    container_name: mailforge_mysql_test
+    restart: unless-stopped
     environment:
       MYSQL_ROOT_PASSWORD: secret
       MYSQL_DATABASE: mailforge_test
     ports:
       - "3307:3306"
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   redis:
     image: redis:7-alpine
+    container_name: mailforge_redis
+    restart: unless-stopped
     ports:
       - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   mailhog:
     image: mailhog/mailhog
+    container_name: mailforge_mailhog
+    restart: unless-stopped
     ports:
-      - "1025:1025"   # SMTP trap
-      - "8025:8025"   # Web UI to view caught emails
+      - "1025:1025"
+      - "8025:8025"
 
 volumes:
   mysql_data:

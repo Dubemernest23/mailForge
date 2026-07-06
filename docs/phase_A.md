@@ -254,7 +254,7 @@ type User struct {
 
     ID           uint64    `bun:"id,pk,autoincrement"`
     PublicID     string    `bun:"public_id,notnull"`
-    Name         string    `bun:"name,notnull"`
+    Userame         string    `bun:"username,notnull"`
     Email        string    `bun:"email,notnull"`
     PasswordHash string    `bun:"password_hash,notnull"`
     Role         string    `bun:"role,notnull,default:'user'"`
@@ -263,6 +263,7 @@ type User struct {
     UpdatedAt    time.Time `bun:"updated_at,notnull"`
 }
 ```
+
 
 **Why `Role` as a `string` and not a Go `type`?** We will define a typed constant set in the auth module (`const RoleUser = "user"` etc.) but the model itself stays as `string` to remain a pure data struct with no business logic dependencies. The service layer enforces role validity.
 

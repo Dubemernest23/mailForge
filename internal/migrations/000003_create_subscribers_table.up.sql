@@ -4,8 +4,8 @@ CREATE TABLE subscribers (
     user_id BIGINT UNSIGNED NOT NULL,
     email VARCHAR(255) NOT NULL,
     name VARCHAR(255) NULL,
-    status ENUM('active', 'unsubscribed', 'bounced', 'complained') 
-        NOT NULL DEFAULT 'active',
+    status ENUM( 'unsubscribed', 'subscribed') 
+        NOT NULL DEFAULT 'subscribed',
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     CONSTRAINT fk_subscribers_user
