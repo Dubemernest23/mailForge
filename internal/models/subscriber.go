@@ -2,6 +2,7 @@ package models
 
 import (
 	"time"
+	"database/sql"
 
 	"github.com/uptrace/bun"
 )
