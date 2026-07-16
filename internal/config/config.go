@@ -28,8 +28,10 @@ type EmailConfig struct {
 }
 
 type JwtConfig struct {
-	JwtSecret string // we will change the jwt struct since we are moving to RS256
-	JwtExpiry string
+	PrivateKeyPath string
+	PublicKeyPath  string
+	AccessExpiry   string // maps to JWT_ACCESS_EXPIRY
+	RefreshExpiry  string // maps to JWT_REFRESH_EXPIRY
 }
 
 type DBConfig struct {
@@ -79,8 +81,10 @@ func NewInitConfig() *Config {
 			SmtpFrom:     getENV("SMTP_FROM", "noreply@mailforge.com"),
 		},
 		Jwt: JwtConfig{
-			JwtSecret: getENV("JWT_SECRET", "your_jwt_secret"),
-			JwtExpiry: getENV("JWT_EXPIRY", "24h"),
+			AccessExpiry:   getENV("JWT_ACCESS_EXPIRY", "1h"),
+			RefreshExpiry:  getENV("JWT_REFRESH_EXPIRY", "7d"),
+			PrivateKeyPath: getENV("JWT_PRIVATE_KEY_PATH", ""),
+			PublicKeyPath:  getENV("JWT_PUBLIC_KEY_PATH", ""),
 		},
 		DB: DBConfig{
 			Host:     getENV("DB_HOST", "localhost"),
