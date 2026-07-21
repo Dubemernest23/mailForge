@@ -86,37 +86,45 @@ func (r *authRepository) UpdateLastLogin(ctx context.Context, publicId string) e
 
 	result, err := r.db.NewUpdate().
 		Model((*models.User)(nil)).
-		Set("last_login_at = ?", time.Now()).
+		Set("last_login_at = ?", time.Now().UTC()).
 		Set("failed_login_attempts = 0").
 		Where("public_id = ?", publicId).Exec(ctx)
 
-	rows, _ := result.RowsAffected()
+	if err != nil {
+		return err
+	}
+
+	rows, err := result.RowsAffected()
+	if err != nil {
+		return err
+	}
 
 	if rows == 0 {
 		return apperrors.ErrNotFound
 	}
 
-	if err != nil {
-		return err
-	}
 	return nil
 }
 
 func (r *authRepository) IncrementFailedAttempts(ctx context.Context, publicId string) error {
-
 	result, err := r.db.NewUpdate().
 		Model((*models.User)(nil)).
 		Set("failed_login_attempts = failed_login_attempts + 1").
-		Where("public_id = ?", publicId).Exec(ctx)
+		Where("public_id = ?", publicId).
+		Exec(ctx)
 
-	rows, _ := result.RowsAffected()
+	if err != nil {
+		return err
+	}
+
+	rows, err := result.RowsAffected()
+	if err != nil {
+		return err
+	}
 
 	if rows == 0 {
 		return apperrors.ErrNotFound
 	}
 
-	if err != nil {
-		return err
-	}
 	return nil
 }

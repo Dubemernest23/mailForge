@@ -9,8 +9,9 @@ import (
 )
 
 func SetupTestDB() (*bun.DB, error) {
-	dsn := "root:secret@tcp(localhost:3307)/mailforge_test?parseTime=true"
+	// dsn := "root:secret@tcp(localhost:3307)/mailforge_test?parseTime=true"
 	// dsn := os.Getenv("TEST_DB_DSN")
+	dsn := "root:secret@tcp(localhost:3307)/mailforge_test?parseTime=true&loc=UTC"
 	sqldb, err := sql.Open("mysql", dsn)
 
 	if err != nil {

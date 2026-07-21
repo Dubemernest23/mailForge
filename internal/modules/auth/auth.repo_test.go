@@ -6,6 +6,7 @@ import (
 	"mailForgeApi/internal/models"
 	testutils "mailForgeApi/internal/testUtils"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -152,4 +153,40 @@ func TestCreateUser_DuplicateEmail(t *testing.T) {
 
 func TestUpdateLastLogin(t *testing.T) {
 
+	repo := setup(t)
+	ctx := context.Background()
+
+	user, err := testutils.CreateTestUser(testDB)
+	require.NoError(t, err)
+
+	_, err = testDB.NewUpdate().
+		Model((*models.User)(nil)).
+		Set("failed_login_attempts = ?", 5).
+		Where("public_id = ?", user.PublicId).
+		Exec(ctx)
+
+	require.NoError(t, err)
+
+	err = repo.UpdateLastLogin(ctx, user.PublicId)
+
+	require.NoError(t, err)
+
+	stored := new(models.User)
+
+	err = testDB.NewSelect().
+		Model(stored).
+		Where("public_id = ?", user.PublicId).
+		Scan(ctx)
+
+	require.NoError(t, err)
+
+	assert.Equal(t, uint32(0), stored.FailedLoginAttempts)
+	assert.True(t, stored.LastLoginAt.Valid)
+	assert.False(t, stored.LastLoginAt.Time.IsZero())
+	assert.WithinDuration(
+		t,
+		time.Now(),
+		stored.LastLoginAt.Time.UTC(),
+		time.Second,
+	)
 }
