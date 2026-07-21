@@ -16,7 +16,7 @@ import (
 
 type AuthRepo interface {
 	CreateUser(ctx context.Context, user *models.User) error
-	FindByID(ctx context.Context, publicId string) (*models.User, error)
+	FindByPublicID(ctx context.Context, publicId string) (*models.User, error)
 	FindByEmail(ctx context.Context, email string) (*models.User, error)
 	UpdateLastLogin(ctx context.Context, publicId string) error
 	IncrementFailedAttempts(ctx context.Context, publicId string) error
@@ -51,7 +51,7 @@ func (r *authRepository) CreateUser(ctx context.Context, user *models.User) erro
 	return err
 }
 
-func (r *authRepository) FindByID(ctx context.Context, publicId string) (*models.User, error) {
+func (r *authRepository) FindByPublicID(ctx context.Context, publicId string) (*models.User, error) {
 	user := new(models.User)
 
 	err := r.db.NewSelect().Model(user).Where("public_id = ?", publicId).
@@ -84,11 +84,17 @@ func (r *authRepository) FindByEmail(ctx context.Context, email string) (*models
 
 func (r *authRepository) UpdateLastLogin(ctx context.Context, publicId string) error {
 
-	_, err := r.db.NewUpdate().
+	result, err := r.db.NewUpdate().
 		Model((*models.User)(nil)).
 		Set("last_login_at = ?", time.Now()).
 		Set("failed_login_attempts = 0").
 		Where("public_id = ?", publicId).Exec(ctx)
+
+	rows, _ := result.RowsAffected()
+
+	if rows == 0 {
+		return apperrors.ErrNotFound
+	}
 
 	if err != nil {
 		return err
@@ -98,10 +104,17 @@ func (r *authRepository) UpdateLastLogin(ctx context.Context, publicId string) e
 
 func (r *authRepository) IncrementFailedAttempts(ctx context.Context, publicId string) error {
 
-	_, err := r.db.NewUpdate().
+	result, err := r.db.NewUpdate().
 		Model((*models.User)(nil)).
 		Set("failed_login_attempts = failed_login_attempts + 1").
 		Where("public_id = ?", publicId).Exec(ctx)
+
+	rows, _ := result.RowsAffected()
+
+	if rows == 0 {
+		return apperrors.ErrNotFound
+	}
+
 	if err != nil {
 		return err
 	}
