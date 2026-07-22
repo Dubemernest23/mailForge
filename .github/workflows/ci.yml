@@ -60,3 +60,13 @@ jobs:
           DB_PASSWORD: secret
           DB_NAME: mailforge_test
           REDIS_URL: redis://localhost:6379
+          TEST_DB_DSN: root:secret@tcp(127.0.0.1:3306)/mailforge_test?parseTime=true&loc=UTC
+      # - name: Test
+      #   run: go test ./... -race -cover
+      #   env:
+      #     DB_HOST: 127.0.0.1
+      #     DB_PORT: 3306
+      #     DB_USER: root
+      #     DB_PASSWORD: secret
+      #     DB_NAME: mailforge_test
+      #     REDIS_URL: redis://localhost:6379
