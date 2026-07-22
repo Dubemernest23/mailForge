@@ -190,3 +190,83 @@ func TestUpdateLastLogin(t *testing.T) {
 		time.Second,
 	)
 }
+
+func TestIncrementFailedAttempts(t *testing.T) {
+	tests := []struct {
+		name             string
+		initialAttempts  uint32
+		publicID         string
+		expectedAttempts uint32
+		expectedErr      error
+	}{
+		{
+			name:             "increment from zero",
+			initialAttempts:  0,
+			expectedAttempts: 1,
+			expectedErr:      nil,
+		},
+		{
+			name:             "increment from five",
+			initialAttempts:  5,
+			expectedAttempts: 6,
+			expectedErr:      nil,
+		},
+		{
+			name:        "user not found",
+			publicID:    "user-does-not-exist",
+			expectedErr: apperrors.ErrNotFound,
+		},
+	}
+
+	for _, tc := range tests {
+		tc := tc
+
+		t.Run(tc.name, func(t *testing.T) {
+			repo := setup(t)
+			ctx := context.Background()
+
+			var publicID string
+
+			// Arrange
+			if tc.expectedErr == nil {
+				user, err := testutils.CreateTestUser(testDB)
+				require.NoError(t, err)
+
+				publicID = user.PublicId
+
+				_, err = testDB.NewUpdate().
+					Model((*models.User)(nil)).
+					Set("failed_login_attempts = ?", tc.initialAttempts).
+					Where("public_id = ?", publicID).
+					Exec(ctx)
+
+				require.NoError(t, err)
+			} else {
+				publicID = tc.publicID
+			}
+
+			// Act
+			err := repo.IncrementFailedAttempts(ctx, publicID)
+
+			// Assert
+			if tc.expectedErr != nil {
+				require.Error(t, err)
+				assert.ErrorIs(t, err, tc.expectedErr)
+				return
+			}
+
+			require.NoError(t, err)
+
+			stored := new(models.User)
+
+			err = testDB.NewSelect().
+				Model(stored).
+				Where("public_id = ?", publicID).
+				Scan(ctx)
+
+			require.NoError(t, err)
+
+			assert.Equal(t, tc.expectedAttempts, stored.FailedLoginAttempts)
+		})
+	}
+}
