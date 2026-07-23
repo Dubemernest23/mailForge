@@ -6,12 +6,14 @@ import (
 	"context"
 	"crypto/rsa"
 
+	"github.com/redis/go-redis/v9"
 	"github.com/uptrace/bun"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
 
 	"mailForgeApi/internal/config"
 	"mailForgeApi/internal/database"
+	redisclient "mailForgeApi/internal/redisClient"
 	"mailForgeApi/internal/routes"
 	"mailForgeApi/internal/server"
 	"mailForgeApi/pkg/logger"
@@ -22,11 +24,13 @@ func NewModules() fx.Option {
 		fx.Provide(config.NewInitConfig),
 		fx.Provide(provideLogger),
 		fx.Provide(database.NewDatabase),
+		fx.Provide(redisclient.NewRedisClient),
 		fx.Provide(providePrivateKey),
 		fx.Provide(providePublicKey),
 		fx.Provide(routes.NewRouter),
 		fx.Provide(server.NewServer),
 		fx.Invoke(registerDBHooks),
+		fx.Invoke(registerRedisHooks),
 	)
 }
 
@@ -53,6 +57,19 @@ func registerDBHooks(lc fx.Lifecycle, db *bun.DB, log *logger.Logger) {
 		OnStop: func(ctx context.Context) error {
 			log.Info("closing database connection", zap.String("status", "closing"))
 			return db.Close()
+		},
+	})
+}
+
+func registerRedisHooks(
+	lc fx.Lifecycle,
+	client *redis.Client,
+	log *logger.Logger,
+) {
+	lc.Append(fx.Hook{
+		OnStop: func(ctx context.Context) error {
+			log.Info("closing redis connection")
+			return client.Close()
 		},
 	})
 }
