@@ -14,4 +14,5 @@ var (
 	ErrInternalServerError = errors.New("internal server error")
 	ErrNotImplemented      = errors.New("not implemented")
 	ErrServiceUnavailable  = errors.New("service unavailable")
+	ErrInvalidRefreshToken = errors.New("invalid or expired refresh token")
 )

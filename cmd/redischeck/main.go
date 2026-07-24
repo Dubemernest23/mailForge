@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"mailForgeApi/internal/config"
-	redisclient "mailForgeApi/internal/redisClient"
+	redisclient "mailForgeApi/internal/redisclient"
 
 	"github.com/joho/godotenv"
 )

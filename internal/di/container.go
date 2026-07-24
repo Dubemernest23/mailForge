@@ -5,6 +5,8 @@ package di
 import (
 	"context"
 	"crypto/rsa"
+	"fmt"
+	"time"
 
 	"github.com/redis/go-redis/v9"
 	"github.com/uptrace/bun"
@@ -13,10 +15,11 @@ import (
 
 	"mailForgeApi/internal/config"
 	"mailForgeApi/internal/database"
-	redisclient "mailForgeApi/internal/redisClient"
+	redisclient "mailForgeApi/internal/redisclient"
 	"mailForgeApi/internal/routes"
 	"mailForgeApi/internal/server"
 	"mailForgeApi/pkg/logger"
+	tokens "mailForgeApi/pkg/token"
 )
 
 func NewModules() fx.Option {
@@ -43,6 +46,14 @@ func provideLogger(cfg *config.Config) *logger.Logger {
 // failures as a clean app.Err() at boot, instead of a bare panic mid-startup.
 func providePrivateKey(cfg *config.Config) (*rsa.PrivateKey, error) {
 	return config.LoadPrivateKey(cfg.Jwt.PrivateKeyPath)
+}
+func provideRefreshTokenManager(client *redis.Client, cfg *config.Config) (tokens.RefreshTokenManager, error) {
+	ttl, err := time.ParseDuration(cfg.Jwt.RefreshExpiry)
+
+	if err != nil {
+		return nil, fmt.Errorf("parsing JWT_REFRESH_EXPIRY: %w", err)
+	}
+	return tokens.NewRefreshTokenManager(client, ttl), nil
 }
 
 // providePublicKey loads and parses the RSA public key used to verify access tokens.
