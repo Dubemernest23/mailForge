@@ -6,7 +6,6 @@ import (
 	"context"
 	"crypto/rsa"
 	"fmt"
-	"time"
 
 	"github.com/redis/go-redis/v9"
 	"github.com/uptrace/bun"
@@ -30,6 +29,7 @@ func NewModules() fx.Option {
 		fx.Provide(redisclient.NewRedisClient),
 		fx.Provide(providePrivateKey),
 		fx.Provide(providePublicKey),
+		fx.Provide(provideRefreshTokenManager),
 		fx.Provide(routes.NewRouter),
 		fx.Provide(server.NewServer),
 		fx.Invoke(registerDBHooks),
@@ -48,8 +48,7 @@ func providePrivateKey(cfg *config.Config) (*rsa.PrivateKey, error) {
 	return config.LoadPrivateKey(cfg.Jwt.PrivateKeyPath)
 }
 func provideRefreshTokenManager(client *redis.Client, cfg *config.Config) (tokens.RefreshTokenManager, error) {
-	ttl, err := time.ParseDuration(cfg.Jwt.RefreshExpiry)
-
+	ttl, err := config.ParseExpiry(cfg.Jwt.RefreshExpiry)
 	if err != nil {
 		return nil, fmt.Errorf("parsing JWT_REFRESH_EXPIRY: %w", err)
 	}
