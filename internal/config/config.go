@@ -17,6 +17,7 @@ type Config struct {
 	Jwt    JwtConfig
 	Email  EmailConfig
 	DB     DBConfig
+	Redis  RedisConfig
 }
 
 type EmailConfig struct {
@@ -41,6 +42,10 @@ type DBConfig struct {
 	Password string
 	Name     string
 	Charset  string
+}
+
+type RedisConfig struct {
+	URL string
 }
 
 func (d DBConfig) DSN() string {
@@ -93,6 +98,9 @@ func NewInitConfig() *Config {
 			Password: getENV("DB_PASSWORD", ""),
 			Name:     getENV("DB_NAME", "mailforge_db"),
 			Charset:  getENV("DB_CHARSET", "utf8mb4"),
+		},
+		Redis: RedisConfig{
+			URL: getENV("REDIS_URL", "redis://localhost:6379"),
 		},
 	}
 }
