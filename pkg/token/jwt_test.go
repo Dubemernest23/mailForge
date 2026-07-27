@@ -53,7 +53,7 @@ func TestVerifyAccessToken_Tampered(t *testing.T) {
 	token, err := GenerateAccessToken(priv, "u-234", "user", time.Hour)
 	require.NoError(t, err)
 
-	tamperedToken := token[:len(token)-1] + "v"
+	tamperedToken := token[:len(token)-2] + "iy"
 
 	_, err = VerifyAccessToken(pub, tamperedToken)
 	assert.Error(t, err)
