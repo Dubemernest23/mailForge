@@ -6,7 +6,6 @@ import (
 	"errors"
 	"log"
 
-	// "fmt"
 	"time"
 
 	"mailForgeApi/internal/apperrors"
@@ -105,9 +104,6 @@ func (s *Service) Login(ctx context.Context, req LoginRequest) (*AuthResponse, e
 	if err != nil {
 		return nil, err
 	}
-
-	// TODO 4: issue access + refresh tokens, same as Register
-	// TODO 5: return &AuthResponse{...}, nil
 
 	accessToken, err := tokens.GenerateAccessToken(s.privateKey, user.PublicId, user.Role, s.accessExpiry)
 	if err != nil {
