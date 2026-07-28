@@ -1,5 +1,4 @@
 // internal/di/container.go
-
 package di
 
 import (
@@ -30,6 +29,7 @@ func NewModules() fx.Option {
 		fx.Provide(providePrivateKey),
 		fx.Provide(providePublicKey),
 		fx.Provide(provideRefreshTokenManager),
+		AuthModule(),
 		fx.Provide(routes.NewRouter),
 		fx.Provide(server.NewServer),
 		fx.Invoke(registerDBHooks),
@@ -47,19 +47,20 @@ func provideLogger(cfg *config.Config) *logger.Logger {
 func providePrivateKey(cfg *config.Config) (*rsa.PrivateKey, error) {
 	return config.LoadPrivateKey(cfg.Jwt.PrivateKeyPath)
 }
-func provideRefreshTokenManager(client *redis.Client, cfg *config.Config) (tokens.RefreshTokenManager, error) {
-	ttl, err := config.ParseExpiry(cfg.Jwt.RefreshExpiry)
-	if err != nil {
-		return nil, fmt.Errorf("parsing JWT_REFRESH_EXPIRY: %w", err)
-	}
-	return tokens.NewRefreshTokenManager(client, ttl), nil
-}
 
 // providePublicKey loads and parses the RSA public key used to verify access tokens.
 // Provided separately from the private key so modules that only need to verify
 // tokens (e.g. middleware) never have the signing key in their dependency graph.
 func providePublicKey(cfg *config.Config) (*rsa.PublicKey, error) {
 	return config.LoadPublicKey(cfg.Jwt.PublicKeyPath)
+}
+
+func provideRefreshTokenManager(client *redis.Client, cfg *config.Config) (tokens.RefreshTokenManager, error) {
+	ttl, err := config.ParseExpiry(cfg.Jwt.RefreshExpiry)
+	if err != nil {
+		return nil, fmt.Errorf("parsing JWT_REFRESH_EXPIRY: %w", err)
+	}
+	return tokens.NewRefreshTokenManager(client, ttl), nil
 }
 
 func registerDBHooks(lc fx.Lifecycle, db *bun.DB, log *logger.Logger) {
@@ -71,11 +72,7 @@ func registerDBHooks(lc fx.Lifecycle, db *bun.DB, log *logger.Logger) {
 	})
 }
 
-func registerRedisHooks(
-	lc fx.Lifecycle,
-	client *redis.Client,
-	log *logger.Logger,
-) {
+func registerRedisHooks(lc fx.Lifecycle, client *redis.Client, log *logger.Logger) {
 	lc.Append(fx.Hook{
 		OnStop: func(ctx context.Context) error {
 			log.Info("closing redis connection")

@@ -12,7 +12,7 @@ import (
 )
 
 func TestHealthCheckReturnsOK(t *testing.T) {
-	router := NewRouter(logger.New("test"))
+	router := NewRouter(logger.New("test"), nil, nil)
 	req := httptest.NewRequest(http.MethodGet, "/health", nil)
 	rec := httptest.NewRecorder()
 
@@ -32,7 +32,7 @@ func TestHealthCheckReturnsOK(t *testing.T) {
 }
 
 func TestRouterReturnsUniformNotFoundError(t *testing.T) {
-	router := NewRouter(logger.New("test"))
+	router := NewRouter(logger.New("test"), nil, nil)
 	req := httptest.NewRequest(http.MethodGet, "/missing", nil)
 	rec := httptest.NewRecorder()
 
@@ -42,7 +42,7 @@ func TestRouterReturnsUniformNotFoundError(t *testing.T) {
 }
 
 func TestRouterReturnsUniformMethodNotAllowedError(t *testing.T) {
-	router := NewRouter(logger.New("test"))
+	router := NewRouter(logger.New("test"), nil, nil)
 	req := httptest.NewRequest(http.MethodPost, "/health", nil)
 	rec := httptest.NewRecorder()
 
