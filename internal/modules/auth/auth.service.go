@@ -4,6 +4,8 @@ import (
 	"context"
 	"crypto/rsa"
 	"errors"
+
+	// "fmt"
 	"time"
 
 	"mailForgeApi/internal/apperrors"
@@ -35,6 +37,7 @@ func NewService(repo AuthRepo, refreshMgr tokens.RefreshTokenManager, privateKey
 }
 
 func (s *Service) Register(ctx context.Context, req RegisterRequest) (*AuthResponse, error) {
+	// hashpassword -> build model and create user -> issue access and refresh token -> return auth response
 	// TODO 1: bcrypt.GenerateFromPassword([]byte(req.Password), bcryptCost)
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(req.Password), bcryptCost)
 	if err != nil {
@@ -75,6 +78,7 @@ func (s *Service) Register(ctx context.Context, req RegisterRequest) (*AuthRespo
 }
 
 func (s *Service) Login(ctx context.Context, req LoginRequest) (*AuthResponse, error) {
+	// find user -> compare password -> update last login -> issue refresh and access token -> return auth response
 	// TODO 1: s.repo.FindByEmail(ctx, req.Email)
 	//   if errors.Is(err, apperrors.ErrNotFound) -> return nil, apperrors.ErrUnauthorized (generic, don't leak which)
 	user, err := s.repo.FindByEmail(ctx, req.Email)
@@ -88,7 +92,10 @@ func (s *Service) Login(ctx context.Context, req LoginRequest) (*AuthResponse, e
 	//   if mismatch -> s.repo.IncrementFailedAttempts(ctx, user.PublicID) -> return nil, apperrors.ErrUnauthorized
 	err = bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(req.Password))
 	if err != nil {
-		s.repo.IncrementFailedAttempts(ctx, user.PublicId)
+		if incErr := s.repo.IncrementFailedAttempts(ctx, user.PublicId); incErr != nil {
+			// TODO: log incErr once logging is wired in — don't let it change the response
+			// return nil, fmt.Errorf("incremental error: %v", incErr)
+		}
 		return nil, apperrors.ErrUnauthorized
 	}
 	// TODO 3: on success -> s.repo.UpdateLastLogin(ctx, user.PublicID)
@@ -124,10 +131,39 @@ func (s *Service) Refresh(ctx context.Context, req RefreshRequest) (*AuthRespons
 	//   -- open question: role isn't stored in Redis, only userID. Where does role come from here?
 	//   -- (worth resolving before you write this — see note below)
 	// TODO 3: return &AuthResponse{AccessToken: ..., RefreshToken: newToken, ExpiresIn: ...}, nil
-	return nil, nil
+
+	newToken, userID, err := s.refreshMgr.ValidateAndRotate(ctx, req.RefreshToken)
+	if errors.Is(err, tokens.ErrInvalidRefreshToken) {
+		return nil, apperrors.ErrInvalidRefreshToken
+	}
+	if err != nil {
+		return nil, err
+	}
+
+	// find user, so that we will have to get the role there
+	user, err := s.repo.FindByPublicID(ctx, userID)
+	if err != nil {
+		return nil, err
+	}
+
+	accessToken, err := tokens.GenerateAccessToken(s.privateKey, user.PublicId, user.Role, s.accessExpiry)
+	if err != nil {
+		return nil, err
+	}
+
+	return &AuthResponse{
+		AccessToken:  accessToken,
+		RefreshToken: newToken,
+		ExpiresIn:    int(s.accessExpiry.Seconds()),
+	}, nil
 }
 
 func (s *Service) Logout(ctx context.Context, req LogoutRequest) error {
 	// TODO 1: s.refreshMgr.RevokeRefreshToken(ctx, req.RefreshToken) — return its error directly.
+	err := s.refreshMgr.RevokeRefreshToken(ctx, req.RefreshToken)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }

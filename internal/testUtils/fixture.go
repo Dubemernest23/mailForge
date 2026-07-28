@@ -22,3 +22,19 @@ func CreateTestUser(db *bun.DB) (*models.User, error) {
 
 	return user, nil
 }
+
+func CreateTestUserWithPassword(db *bun.DB, plaintextPassword string) (*models.User, error) {
+	user, err := BuildTestUserWithPassword(plaintextPassword)
+	if err != nil {
+		return nil, err
+	}
+
+	ctx := context.Background()
+
+	_, err = db.NewInsert().Model(user).Exec(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return user, nil
+}

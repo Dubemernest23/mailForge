@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"mailForgeApi/internal/models"
 	"time"
+
+	"golang.org/x/crypto/bcrypt"
 )
 
 func randomPublicID() (string, error) {
@@ -39,4 +41,19 @@ func BuildTestUser() (*models.User, error) {
 
 		FailedLoginAttempts: 0,
 	}, nil
+}
+
+func BuildTestUserWithPassword(plaintextPassword string) (*models.User, error) {
+	user, err := BuildTestUser()
+	if err != nil {
+		return nil, err
+	}
+
+	hashed, err := bcrypt.GenerateFromPassword([]byte(plaintextPassword), 12)
+	if err != nil {
+		return nil, err
+	}
+	user.PasswordHash = string(hashed)
+
+	return user, nil
 }
