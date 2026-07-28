@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/rsa"
 	"errors"
+	"log"
 
 	// "fmt"
 	"time"
@@ -95,6 +96,7 @@ func (s *Service) Login(ctx context.Context, req LoginRequest) (*AuthResponse, e
 		if incErr := s.repo.IncrementFailedAttempts(ctx, user.PublicId); incErr != nil {
 			// TODO: log incErr once logging is wired in — don't let it change the response
 			// return nil, fmt.Errorf("incremental error: %v", incErr)
+			log.Printf("failed to increment failed login attempts for user %s: %v", user.PublicId, incErr)
 		}
 		return nil, apperrors.ErrUnauthorized
 	}

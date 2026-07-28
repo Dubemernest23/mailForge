@@ -30,8 +30,6 @@ func SetupTestDB() (*bun.DB, error) {
 	return bun.NewDB(sqldb, mysqldialect.New()), nil
 }
 
-var testRedisClient *redis.Client
-
 func SetupTestRedis() (*redis.Client, error) {
 	addr := os.Getenv("TEST_REDIS_ADDR")
 	if addr == "" {
