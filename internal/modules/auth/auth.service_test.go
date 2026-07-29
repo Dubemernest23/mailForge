@@ -24,9 +24,9 @@ func TestRegisterUser(t *testing.T) {
 			name: "successful_signup",
 			setup: func(t *testing.T) RegisterRequest {
 				return RegisterRequest{
-					Email:    "firstuser1@gmail.com",
+					Email:    "firstuser6@gmail.com",
 					Username: "firstuser",
-					Password: "firstuser1@g",
+					Password: "firstuser6@g",
 				}
 			},
 			expectedErr: nil,
@@ -39,7 +39,7 @@ func TestRegisterUser(t *testing.T) {
 				return RegisterRequest{
 					Email:    existing.Email,
 					Username: "firstuser",
-					Password: "firstuser1@g",
+					Password: "firstuser6@g",
 				}
 			},
 			expectedErr: apperrors.ErrDuplicate,
@@ -81,16 +81,16 @@ func TestLoginUser(t *testing.T) {
 		{
 			name: "successful_login",
 			setup: func(t *testing.T) LoginRequest {
-				user, err := testutils.CreateTestUserWithPassword(testDB, "firstuser1@g")
+				user, err := testutils.CreateTestUserWithPassword(testDB, "firstuser6@g")
 				require.NoError(t, err)
-				return LoginRequest{Email: user.Email, Password: "firstuser1@g"}
+				return LoginRequest{Email: user.Email, Password: "firstuser6@g"}
 			},
 			expectedErr: nil,
 		},
 		{
 			name: "wrong_password",
 			setup: func(t *testing.T) LoginRequest {
-				user, err := testutils.CreateTestUserWithPassword(testDB, "firstuser1@g")
+				user, err := testutils.CreateTestUserWithPassword(testDB, "firstuser6@g")
 				require.NoError(t, err)
 				return LoginRequest{Email: user.Email, Password: "wrong-password"}
 			},
