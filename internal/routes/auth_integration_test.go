@@ -301,4 +301,5 @@ func TestAuthRoutes_ProtectedRoute(t *testing.T) {
 
 		assert.Equal(t, http.StatusUnauthorized, rec.Code)
 	})
+
 }
