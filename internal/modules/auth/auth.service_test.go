@@ -2,7 +2,7 @@ package auth
 
 import (
 	"context"
-	"mailForgeApi/internal/apperrors"
+	"mailForgeApi/internal/shared/apperrors"
 	testutils "mailForgeApi/internal/testUtils"
 	"testing"
 

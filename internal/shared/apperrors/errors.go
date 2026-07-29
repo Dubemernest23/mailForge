@@ -1,6 +1,10 @@
 package apperrors
 
-import "errors"
+import (
+	"errors"
+	"mailForgeApi/internal/shared/constants"
+	"mailForgeApi/internal/shared/response"
+)
 
 var (
 	ErrNotFound            = errors.New("resource not found")
@@ -16,3 +20,16 @@ var (
 	ErrServiceUnavailable  = errors.New("service unavailable")
 	ErrInvalidRefreshToken = errors.New("invalid or expired refresh token")
 )
+
+func MapServiceError(err error) error {
+	switch {
+	case errors.Is(err, ErrDuplicate):
+		return response.WrapAppError(err, constants.StatusConflict, response.CodeConflict, "email already registered")
+	case errors.Is(err, ErrUnauthorized):
+		return response.WrapAppError(err, constants.StatusUnauthorized, response.CodeUnauthorized, "invalid credentials")
+	case errors.Is(err, ErrInvalidRefreshToken):
+		return response.WrapAppError(err, constants.StatusUnauthorized, response.CodeUnauthorized, "invalid or expired refresh token")
+	default:
+		return err // unmapped -> HandleError's fallback -> 500
+	}
+}

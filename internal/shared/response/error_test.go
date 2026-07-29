@@ -7,7 +7,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"mailForgeApi/internal/constants"
+	"mailForgeApi/internal/shared/constants"
 )
 
 func TestHandleErrorWritesAppErrorResponse(t *testing.T) {

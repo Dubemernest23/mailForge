@@ -5,7 +5,7 @@ import (
 	"github.com/go-chi/chi/v5"
 
 	"mailForgeApi/internal/modules/auth"
-	"mailForgeApi/internal/response"
+	"mailForgeApi/internal/shared/response"
 )
 
 func registerAuthRoutes(r chi.Router, h *auth.Handler) {

@@ -6,7 +6,7 @@ import (
 	chimiddleware "github.com/go-chi/chi/v5/middleware"
 	"go.uber.org/zap"
 
-	"mailForgeApi/internal/response"
+	"mailForgeApi/internal/shared/response"
 	"mailForgeApi/pkg/logger"
 )
 

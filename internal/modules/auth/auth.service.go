@@ -8,10 +8,11 @@ import (
 
 	"time"
 
-	"mailForgeApi/internal/apperrors"
 	"mailForgeApi/internal/models"
+	"mailForgeApi/internal/shared/apperrors"
 	tokens "mailForgeApi/pkg/token"
 
+	"github.com/google/uuid"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -43,11 +44,18 @@ func (s *Service) Register(ctx context.Context, req RegisterRequest) (*AuthRespo
 	if err != nil {
 		return nil, err
 	}
+
+	publicID, err := uuid.NewV7()
+	if err != nil {
+		return nil, err
+	}
 	// TODO 2: build a *models.User from req (username, email, hashed password)
 	user := &models.User{
+		PublicId:     publicID.String(),
 		Email:        req.Email,
 		Username:     req.Username,
 		PasswordHash: string(hashedPassword),
+		Role:         "user", // default role
 	}
 	// TODO 3: s.repo.CreateUser(ctx, user) — if errors.Is(err, apperrors.ErrDuplicate), return nil, apperrors.ErrDuplicate
 	err = s.repo.CreateUser(ctx, user)
