@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"strings"
 
-	"mailForgeApi/internal/response"
+	"mailForgeApi/internal/shared/response"
 	tokens "mailForgeApi/pkg/token"
 )
 

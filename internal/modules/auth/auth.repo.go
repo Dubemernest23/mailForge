@@ -4,8 +4,8 @@ import (
 	"context"
 	"database/sql"
 	"errors"
-	"mailForgeApi/internal/apperrors"
 	"mailForgeApi/internal/models"
+	"mailForgeApi/internal/shared/apperrors"
 	"time"
 
 	"github.com/go-sql-driver/mysql"

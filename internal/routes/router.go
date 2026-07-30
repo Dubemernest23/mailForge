@@ -2,27 +2,37 @@
 package routes
 
 import (
+	"crypto/rsa"
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
 	chimiddleware "github.com/go-chi/chi/v5/middleware"
 
-	"mailForgeApi/internal/constants"
 	"mailForgeApi/internal/middleware"
-	"mailForgeApi/internal/response"
+	"mailForgeApi/internal/modules/auth"
+	"mailForgeApi/internal/shared/constants"
+	"mailForgeApi/internal/shared/response"
 	"mailForgeApi/pkg/logger"
 )
 
-func NewRouter(log *logger.Logger) *chi.Mux {
+func NewRouter(log *logger.Logger, authHandler *auth.Handler, publicKey *rsa.PublicKey) *chi.Mux {
 	r := chi.NewRouter()
 
-	r.Use(chimiddleware.RequestID)       // attaches X-Request-Id to every request
-	r.Use(middleware.RequestLogger(log)) //structured logger
-	r.Use(middleware.Recoverer(log))     // recovers from panics with a JSON response
+	r.Use(chimiddleware.RequestID)
+	r.Use(middleware.RequestLogger(log))
+	r.Use(middleware.Recoverer(log))
 
 	r.Get("/health", healthCheck)
 	r.NotFound(response.NotFound)
 	r.MethodNotAllowed(response.MethodNotAllowed)
+
+	registerAuthRoutes(r, authHandler)
+
+	// Protected route group — empty for now. Phase C mounts business routes
+	// here so router wiring doesn't need to change again.
+	r.Group(func(protected chi.Router) {
+		protected.Use(middleware.JWTMiddleware(publicKey))
+	})
 
 	return r
 }

@@ -2,8 +2,8 @@ package auth
 
 import (
 	"context"
-	"mailForgeApi/internal/apperrors"
 	"mailForgeApi/internal/models"
+	"mailForgeApi/internal/shared/apperrors"
 	testutils "mailForgeApi/internal/testUtils"
 	"testing"
 	"time"

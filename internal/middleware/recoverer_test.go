@@ -8,8 +8,8 @@ import (
 
 	chimiddleware "github.com/go-chi/chi/v5/middleware"
 
-	"mailForgeApi/internal/constants"
-	"mailForgeApi/internal/response"
+	"mailForgeApi/internal/shared/constants"
+	"mailForgeApi/internal/shared/response"
 	"mailForgeApi/pkg/logger"
 )
 

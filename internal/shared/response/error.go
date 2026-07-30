@@ -7,7 +7,7 @@ import (
 
 	chimiddleware "github.com/go-chi/chi/v5/middleware"
 
-	"mailForgeApi/internal/constants"
+	"mailForgeApi/internal/shared/constants"
 )
 
 const ContentTypeJSON = "application/json"
