@@ -37,6 +37,11 @@ jobs:
       - name: Install dependencies
         run: go mod download
 
+      - name: Verify Swagger docs are up to date
+        run: |
+          go install github.com/swaggo/swag/cmd/swag@latest
+          make swag-check
+
       - name: Run migrations
         run: make migrate-up
         env:

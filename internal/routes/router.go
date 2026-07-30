@@ -6,8 +6,11 @@ import (
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
+	// _ "github.com/venosm/http-swagger/example/go-chi/docs"
 	chimiddleware "github.com/go-chi/chi/v5/middleware"
+	httpSwagger "github.com/venosm/http-swagger"
 
+	"mailForgeApi/internal/config"
 	"mailForgeApi/internal/middleware"
 	"mailForgeApi/internal/modules/auth"
 	"mailForgeApi/internal/shared/constants"
@@ -25,6 +28,13 @@ func NewRouter(log *logger.Logger, authHandler *auth.Handler, publicKey *rsa.Pub
 	r.Get("/health", healthCheck)
 	r.NotFound(response.NotFound)
 	r.MethodNotAllowed(response.MethodNotAllowed)
+	if config.NewInitConfig().Server.AppEnv != "production" { // adjust to your actual Config field name
+		r.Get("/swagger/*", httpSwagger.Handler(
+			httpSwagger.URL("/swagger/doc.json"),
+			httpSwagger.TryItOutEnabled(true),
+			httpSwagger.PersistAuthorization(true),
+		))
+	}
 
 	registerAuthRoutes(r, authHandler)
 

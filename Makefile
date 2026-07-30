@@ -6,7 +6,7 @@ endif
 .PHONY: help dev build test clean lint tidy \
         docker-up docker-down \
         db-create migrate-up migrate-down migrate-status db-reset \
-        gen-keys
+        gen-keys swag swag-check
 
 help:
 	@echo ""
@@ -109,3 +109,16 @@ gen-keys:
 	@echo "  keys/private.pem — NEVER commit this file"
 	@echo "  keys/public.pem  — safe to commit"
 	@echo ""
+# ─── API Docs ────────────────────────────────────────────────────────────────
+
+# Regenerates the Swagger/OpenAPI spec from handler annotations.
+# Run this after adding or changing any @Summary/@Param/@Success annotations,
+# then commit the changed files in internal/docs.
+swag:
+	swag init -g cmd/api/main.go -o internal/docs --parseDependency --parseInternal
+
+# Regenerates the spec and fails if the committed output doesn't match —
+# this is what CI runs to catch a docs/code drift before merge.
+swag-check: swag
+	@git diff --exit-code internal/docs || \
+		(echo "Swagger docs are out of date — run 'make swag' and commit the result." && exit 1)

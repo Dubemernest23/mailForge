@@ -1,0 +1,15 @@
+# .golangci.yml
+run:
+  timeout: 5m
+
+issues:
+  exclude-dirs:
+    - internal/docs   # swag-generated, not hand-written — don't lint it
+
+linters:
+  enable:
+    - errcheck      # catches unchecked error returns — important given your apperrors/sentinel-error pattern
+    - govet
+    - staticcheck
+    - unused
+    - gofmt

@@ -278,14 +278,16 @@ Current test coverage includes:
 - Uniform JSON 404 response
 - Uniform JSON 405 response
 
-## Development Status
+## API Documentation
 
-MailForge has a stronger backend foundation now, but it is not a complete product API yet. The next useful development steps are:
+Interactive API docs are available via Swagger UI when running outside production:
+The spec is generated from handler annotations using `swag`. After changing any
+`@Summary`/`@Param`/`@Success`/`@Failure` comments on a handler, regenerate and
+commit the result:
 
-1. Add Bun model structs for the migrated tables.
-2. Implement auth repository, service, handler, and routes.
-3. Add password hashing and JWT creation.
-4. Add JWT middleware for protected routes.
-5. Implement list and subscriber management.
-6. Implement campaign CRUD.
-7. Add service and handler tests as each module becomes functional.
+```bash
+make swag
+```
+
+CI runs `make swag-check` and will fail the build if the committed spec is out
+of sync with the code.
