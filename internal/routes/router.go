@@ -7,7 +7,10 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	chimiddleware "github.com/go-chi/chi/v5/middleware"
+	httpSwagger "github.com/swaggo/http-swagger"
 
+	"mailForgeApi/internal/config"
+	_ "mailForgeApi/internal/docs"
 	"mailForgeApi/internal/middleware"
 	"mailForgeApi/internal/modules/auth"
 	"mailForgeApi/internal/shared/constants"
@@ -25,11 +28,15 @@ func NewRouter(log *logger.Logger, authHandler *auth.Handler, publicKey *rsa.Pub
 	r.Get("/health", healthCheck)
 	r.NotFound(response.NotFound)
 	r.MethodNotAllowed(response.MethodNotAllowed)
+	if config.NewInitConfig().Server.AppEnv != "production" {
+		r.Get("/swagger/*", httpSwagger.Handler(
+			httpSwagger.URL("/swagger/doc.json"),
+			httpSwagger.PersistAuthorization(true),
+		))
+	}
 
 	registerAuthRoutes(r, authHandler)
 
-	// Protected route group — empty for now. Phase C mounts business routes
-	// here so router wiring doesn't need to change again.
 	r.Group(func(protected chi.Router) {
 		protected.Use(middleware.JWTMiddleware(publicKey))
 	})

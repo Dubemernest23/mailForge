@@ -1,0 +1,200 @@
+basePath: /
+definitions:
+  internal_modules_auth.AuthResponse:
+    properties:
+      access_token:
+        description: Signed RS256 JWT
+        type: string
+      expires_in:
+        description: S
+        type: integer
+      refresh_token:
+        description: Opaque UUID
+        type: string
+    type: object
+  internal_modules_auth.LoginRequest:
+    properties:
+      email:
+        type: string
+      password:
+        minLength: 8
+        type: string
+    required:
+    - email
+    - password
+    type: object
+  internal_modules_auth.LogoutRequest:
+    properties:
+      refresh_token:
+        type: string
+    required:
+    - refresh_token
+    type: object
+  internal_modules_auth.RefreshRequest:
+    properties:
+      refresh_token:
+        type: string
+    required:
+    - refresh_token
+    type: object
+  internal_modules_auth.RegisterRequest:
+    properties:
+      email:
+        type: string
+      password:
+        minLength: 8
+        type: string
+      username:
+        minLength: 3
+        type: string
+    required:
+    - email
+    - password
+    - username
+    type: object
+  mailForgeApi_internal_shared_response.ErrorBody:
+    properties:
+      error:
+        $ref: '#/definitions/mailForgeApi_internal_shared_response.ErrorDetail'
+      request_id:
+        type: string
+      success:
+        type: boolean
+    type: object
+  mailForgeApi_internal_shared_response.ErrorDetail:
+    properties:
+      code:
+        type: string
+      message:
+        type: string
+    type: object
+host: localhost:3010
+info:
+  contact: {}
+  description: MailForge backend API. Phase B covers authentication and identity —
+    registration, login, token refresh, and logout.
+  title: MailForge API
+  version: 1.0.0
+paths:
+  /auth/login:
+    post:
+      consumes:
+      - application/json
+      description: Authenticates a user and returns an access/refresh token pair.
+      parameters:
+      - description: Login details
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/internal_modules_auth.LoginRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_modules_auth.AuthResponse'
+        "400":
+          description: validation error (missing/invalid field)
+          schema:
+            $ref: '#/definitions/mailForgeApi_internal_shared_response.ErrorBody'
+        "401":
+          description: invalid credentials
+          schema:
+            $ref: '#/definitions/mailForgeApi_internal_shared_response.ErrorBody'
+      summary: Login a user
+      tags:
+      - auth
+  /auth/logout:
+    post:
+      consumes:
+      - application/json
+      description: Invalidates the given refresh token.
+      parameters:
+      - description: Logout details
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/internal_modules_auth.LogoutRequest'
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: no content
+        "400":
+          description: validation error (missing/invalid field)
+          schema:
+            $ref: '#/definitions/mailForgeApi_internal_shared_response.ErrorBody'
+      summary: Logout a user
+      tags:
+      - auth
+  /auth/refresh:
+    post:
+      consumes:
+      - application/json
+      description: Generates a new access token using a valid refresh token.
+      parameters:
+      - description: Refresh details
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/internal_modules_auth.RefreshRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_modules_auth.AuthResponse'
+        "400":
+          description: validation error (missing/invalid field)
+          schema:
+            $ref: '#/definitions/mailForgeApi_internal_shared_response.ErrorBody'
+        "401":
+          description: invalid refresh token
+          schema:
+            $ref: '#/definitions/mailForgeApi_internal_shared_response.ErrorBody'
+      summary: Refresh an access token
+      tags:
+      - auth
+  /auth/register:
+    post:
+      consumes:
+      - application/json
+      description: Creates a new user account and returns an access/refresh token
+        pair.
+      parameters:
+      - description: Registration details
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/internal_modules_auth.RegisterRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/internal_modules_auth.AuthResponse'
+        "400":
+          description: validation error (missing/invalid field)
+          schema:
+            $ref: '#/definitions/mailForgeApi_internal_shared_response.ErrorBody'
+        "409":
+          description: email already registered
+          schema:
+            $ref: '#/definitions/mailForgeApi_internal_shared_response.ErrorBody'
+      summary: Register a new user
+      tags:
+      - auth
+securityDefinitions:
+  BearerAuth:
+    description: Type "Bearer" followed by a space and the JWT access token.
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"

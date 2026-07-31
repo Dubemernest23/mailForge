@@ -51,6 +51,28 @@ func TestRouterReturnsUniformMethodNotAllowedError(t *testing.T) {
 	assertErrorResponse(t, rec, constants.StatusMethodNotAllowed, response.CodeMethodNotAllowed)
 }
 
+func TestSwaggerDocIsServedOutsideProduction(t *testing.T) {
+	t.Setenv("APP_ENV", "development")
+
+	router := NewRouter(logger.New("test"), nil, nil)
+	req := httptest.NewRequest(http.MethodGet, "/swagger/doc.json", nil)
+	rec := httptest.NewRecorder()
+
+	router.ServeHTTP(rec, req)
+
+	if rec.Code != constants.StatusOK {
+		t.Fatalf("expected status %d, got %d", constants.StatusOK, rec.Code)
+	}
+
+	var spec map[string]any
+	if err := json.NewDecoder(rec.Body).Decode(&spec); err != nil {
+		t.Fatalf("failed to decode Swagger doc: %v", err)
+	}
+	if spec["swagger"] != "2.0" {
+		t.Fatalf("expected Swagger version 2.0, got %v", spec["swagger"])
+	}
+}
+
 func assertErrorResponse(t *testing.T, rec *httptest.ResponseRecorder, expectedStatus int, expectedCode string) {
 	t.Helper()
 
