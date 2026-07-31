@@ -1,316 +1,299 @@
 {
-    "components": {
-        "schemas": {
-            "internal_modules_auth.AuthResponse": {
-                "properties": {
-                    "access_token": {
-                        "description": "Signed RS256 JWT",
-                        "type": "string"
-                    },
-                    "expires_in": {
-                        "description": "S",
-                        "type": "integer"
-                    },
-                    "refresh_token": {
-                        "description": "Opaque UUID",
-                        "type": "string"
-                    }
-                },
-                "type": "object"
-            },
-            "internal_modules_auth.LoginRequest": {
-                "properties": {
-                    "email": {
-                        "type": "string"
-                    },
-                    "password": {
-                        "minLength": 8,
-                        "type": "string"
-                    }
-                },
-                "required": [
-                    "email",
-                    "password"
-                ],
-                "type": "object"
-            },
-            "internal_modules_auth.LogoutRequest": {
-                "properties": {
-                    "refresh_token": {
-                        "type": "string"
-                    }
-                },
-                "required": [
-                    "refresh_token"
-                ],
-                "type": "object"
-            },
-            "internal_modules_auth.RefreshRequest": {
-                "properties": {
-                    "refresh_token": {
-                        "type": "string"
-                    }
-                },
-                "required": [
-                    "refresh_token"
-                ],
-                "type": "object"
-            },
-            "internal_modules_auth.RegisterRequest": {
-                "properties": {
-                    "email": {
-                        "type": "string"
-                    },
-                    "password": {
-                        "minLength": 8,
-                        "type": "string"
-                    },
-                    "username": {
-                        "minLength": 3,
-                        "type": "string"
-                    }
-                },
-                "required": [
-                    "username",
-                    "email",
-                    "password"
-                ],
-                "type": "object"
-            },
-            "mailForgeApi_internal_shared_response.ErrorBody": {
-                "properties": {
-                    "error": {
-                        "$ref": "#/components/schemas/mailForgeApi_internal_shared_response.ErrorDetail"
-                    },
-                    "request_id": {
-                        "type": "string"
-                    },
-                    "success": {
-                        "type": "boolean"
-                    }
-                },
-                "type": "object"
-            },
-            "mailForgeApi_internal_shared_response.ErrorDetail": {
-                "properties": {
-                    "code": {
-                        "type": "string"
-                    },
-                    "message": {
-                        "type": "string"
-                    }
-                },
-                "type": "object"
-            }
-        },
-        "securitySchemes": {
-            "BearerAuth": {
-                "description": "Type \"Bearer\" followed by a space and the JWT access token.",
-                "in": "header",
-                "name": "Authorization",
-                "type": "apiKey"
-            }
-        }
-    },
+    "swagger": "2.0",
     "info": {
-        "contact": {},
         "description": "MailForge backend API. Phase B covers authentication and identity — registration, login, token refresh, and logout.",
         "title": "MailForge API",
+        "contact": {},
         "version": "1.0.0"
     },
-    "openapi": "3.0.0",
+    "host": "localhost:3010",
+    "basePath": "/",
     "paths": {
         "/auth/login": {
             "post": {
                 "description": "Authenticates a user and returns an access/refresh token pair.",
-                "requestBody": {
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "$ref": "#/components/schemas/internal_modules_auth.LoginRequest"
-                            }
-                        }
-                    },
-                    "required": true
-                },
-                "responses": {
-                    "200": {
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/internal_modules_auth.AuthResponse"
-                                }
-                            }
-                        },
-                        "description": "OK"
-                    },
-                    "400": {
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/mailForgeApi_internal_shared_response.ErrorBody"
-                                }
-                            }
-                        },
-                        "description": "validation error (missing/invalid field)"
-                    },
-                    "401": {
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/mailForgeApi_internal_shared_response.ErrorBody"
-                                }
-                            }
-                        },
-                        "description": "invalid credentials"
-                    }
-                },
-                "summary": "Login a user",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
                 "tags": [
                     "auth"
-                ]
+                ],
+                "summary": "Login a user",
+                "parameters": [
+                    {
+                        "description": "Login details",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_auth.LoginRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_auth.AuthResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "validation error (missing/invalid field)",
+                        "schema": {
+                            "$ref": "#/definitions/mailForgeApi_internal_shared_response.ErrorBody"
+                        }
+                    },
+                    "401": {
+                        "description": "invalid credentials",
+                        "schema": {
+                            "$ref": "#/definitions/mailForgeApi_internal_shared_response.ErrorBody"
+                        }
+                    }
+                }
             }
         },
         "/auth/logout": {
             "post": {
                 "description": "Invalidates the given refresh token.",
-                "requestBody": {
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "$ref": "#/components/schemas/internal_modules_auth.LogoutRequest"
-                            }
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "auth"
+                ],
+                "summary": "Logout a user",
+                "parameters": [
+                    {
+                        "description": "Logout details",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_auth.LogoutRequest"
                         }
-                    },
-                    "required": true
-                },
+                    }
+                ],
                 "responses": {
                     "204": {
                         "description": "no content"
                     },
                     "400": {
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/mailForgeApi_internal_shared_response.ErrorBody"
-                                }
-                            }
-                        },
-                        "description": "validation error (missing/invalid field)"
+                        "description": "validation error (missing/invalid field)",
+                        "schema": {
+                            "$ref": "#/definitions/mailForgeApi_internal_shared_response.ErrorBody"
+                        }
                     }
-                },
-                "summary": "Logout a user",
-                "tags": [
-                    "auth"
-                ]
+                }
             }
         },
         "/auth/refresh": {
             "post": {
                 "description": "Generates a new access token using a valid refresh token.",
-                "requestBody": {
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "$ref": "#/components/schemas/internal_modules_auth.RefreshRequest"
-                            }
-                        }
-                    },
-                    "required": true
-                },
-                "responses": {
-                    "200": {
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/internal_modules_auth.AuthResponse"
-                                }
-                            }
-                        },
-                        "description": "OK"
-                    },
-                    "400": {
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/mailForgeApi_internal_shared_response.ErrorBody"
-                                }
-                            }
-                        },
-                        "description": "validation error (missing/invalid field)"
-                    },
-                    "401": {
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/mailForgeApi_internal_shared_response.ErrorBody"
-                                }
-                            }
-                        },
-                        "description": "invalid refresh token"
-                    }
-                },
-                "summary": "Refresh an access token",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
                 "tags": [
                     "auth"
-                ]
+                ],
+                "summary": "Refresh an access token",
+                "parameters": [
+                    {
+                        "description": "Refresh details",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_auth.RefreshRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_auth.AuthResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "validation error (missing/invalid field)",
+                        "schema": {
+                            "$ref": "#/definitions/mailForgeApi_internal_shared_response.ErrorBody"
+                        }
+                    },
+                    "401": {
+                        "description": "invalid refresh token",
+                        "schema": {
+                            "$ref": "#/definitions/mailForgeApi_internal_shared_response.ErrorBody"
+                        }
+                    }
+                }
             }
         },
         "/auth/register": {
             "post": {
                 "description": "Creates a new user account and returns an access/refresh token pair.",
-                "requestBody": {
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "$ref": "#/components/schemas/internal_modules_auth.RegisterRequest"
-                            }
-                        }
-                    },
-                    "required": true
-                },
-                "responses": {
-                    "201": {
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/internal_modules_auth.AuthResponse"
-                                }
-                            }
-                        },
-                        "description": "Created"
-                    },
-                    "400": {
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/mailForgeApi_internal_shared_response.ErrorBody"
-                                }
-                            }
-                        },
-                        "description": "validation error (missing/invalid field)"
-                    },
-                    "409": {
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/mailForgeApi_internal_shared_response.ErrorBody"
-                                }
-                            }
-                        },
-                        "description": "email already registered"
-                    }
-                },
-                "summary": "Register a new user",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
                 "tags": [
                     "auth"
-                ]
+                ],
+                "summary": "Register a new user",
+                "parameters": [
+                    {
+                        "description": "Registration details",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_auth.RegisterRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_auth.AuthResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "validation error (missing/invalid field)",
+                        "schema": {
+                            "$ref": "#/definitions/mailForgeApi_internal_shared_response.ErrorBody"
+                        }
+                    },
+                    "409": {
+                        "description": "email already registered",
+                        "schema": {
+                            "$ref": "#/definitions/mailForgeApi_internal_shared_response.ErrorBody"
+                        }
+                    }
+                }
             }
         }
     },
-    "servers": [
-        {
-            "url": "{{.Scheme}}://{{.Host}}{{.BasePath}}"
+    "definitions": {
+        "internal_modules_auth.AuthResponse": {
+            "type": "object",
+            "properties": {
+                "access_token": {
+                    "description": "Signed RS256 JWT",
+                    "type": "string"
+                },
+                "expires_in": {
+                    "description": "S",
+                    "type": "integer"
+                },
+                "refresh_token": {
+                    "description": "Opaque UUID",
+                    "type": "string"
+                }
+            }
+        },
+        "internal_modules_auth.LoginRequest": {
+            "type": "object",
+            "required": [
+                "email",
+                "password"
+            ],
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string",
+                    "minLength": 8
+                }
+            }
+        },
+        "internal_modules_auth.LogoutRequest": {
+            "type": "object",
+            "required": [
+                "refresh_token"
+            ],
+            "properties": {
+                "refresh_token": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_modules_auth.RefreshRequest": {
+            "type": "object",
+            "required": [
+                "refresh_token"
+            ],
+            "properties": {
+                "refresh_token": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_modules_auth.RegisterRequest": {
+            "type": "object",
+            "required": [
+                "email",
+                "password",
+                "username"
+            ],
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string",
+                    "minLength": 8
+                },
+                "username": {
+                    "type": "string",
+                    "minLength": 3
+                }
+            }
+        },
+        "mailForgeApi_internal_shared_response.ErrorBody": {
+            "type": "object",
+            "properties": {
+                "error": {
+                    "$ref": "#/definitions/mailForgeApi_internal_shared_response.ErrorDetail"
+                },
+                "request_id": {
+                    "type": "string"
+                },
+                "success": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "mailForgeApi_internal_shared_response.ErrorDetail": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "string"
+                },
+                "message": {
+                    "type": "string"
+                }
+            }
         }
-    ]
+    },
+    "securityDefinitions": {
+        "BearerAuth": {
+            "description": "Type \"Bearer\" followed by a space and the JWT access token.",
+            "type": "apiKey",
+            "name": "Authorization",
+            "in": "header"
+        }
+    }
 }
