@@ -314,8 +314,8 @@ var SwaggerInfo = &swag.Spec{
 	Description:      "MailForge backend API. Phase B covers authentication and identity — registration, login, token refresh, and logout.",
 	InfoInstanceName: "swagger",
 	SwaggerTemplate:  docTemplate,
-	// LeftDelim:        "{{",
-	// RightDelim:       "}}",
+	LeftDelim:        "{{",
+	RightDelim:       "}}",
 }
 
 func init() {
