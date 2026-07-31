@@ -1,6 +1,6 @@
 # MailForge
 
-MailForge is a Go backend for an email campaign platform. The current project state has the backend foundation in place plus the Phase B authentication slice: registration, login, refresh-token rotation, logout, RS256 JWT signing/verification, Redis-backed refresh tokens, MySQL persistence, and Swagger/OpenAPI documentation.
+MailForge is a Go backend for an email campaign platform. The current project state has the backend foundation in place plus the Phase B authentication slice: registration, login, refresh-token rotation, logout, RS256 JWT signing/verification, Redis-backed refresh tokens, MySQL persistence, and Swagger documentation.
 
 ## Tech Stack
 
@@ -35,7 +35,7 @@ MailForge is a Go backend for an email campaign platform. The current project st
 - RS256 access token generation and middleware verification
 - Refresh-token issue, rotation, and revocation through Redis
 - Swagger UI in non-production environments at `/swagger/index.html`
-- OpenAPI JSON at `/swagger/doc.json`
+- Swagger JSON at `/swagger/doc.json`
 
 ## Not Implemented Yet
 
@@ -160,7 +160,7 @@ mailForge/
 |   |-- config/               # App config, expiry parsing, JWT key loading
 |   |-- database/             # Bun/MySQL setup
 |   |-- di/                   # Fx providers and module wiring
-|   |-- docs/                 # Generated Swagger/OpenAPI files
+|   |-- docs/                 # Generated Swagger files
 |   |-- middleware/           # Logging, recovery, JWT middleware
 |   |-- migrations/           # Embedded SQL migrations and runner
 |   |-- models/               # Bun model structs
@@ -219,7 +219,7 @@ Run the API and confirm Swagger in a browser:
 http://localhost:3010/swagger/index.html
 ```
 
-The OpenAPI JSON should be available at:
+The Swagger JSON should be available at:
 
 ```text
 http://localhost:3010/swagger/doc.json
@@ -300,7 +300,7 @@ Manual checks:
 
 - Visit `http://localhost:3010/health` and confirm `{"status":"ok"}`.
 - Visit `http://localhost:3010/swagger/index.html` and confirm the Swagger UI loads.
-- Open `http://localhost:3010/swagger/doc.json` and confirm it includes `openapi: 3.0.0`.
+- Open `http://localhost:3010/swagger/doc.json` and confirm it includes `"swagger": "2.0"`.
 - In Swagger UI, confirm the auth endpoints are listed under the `auth` tag.
 - Use `POST /auth/register` with a valid body and confirm a `201` response with `access_token`, `refresh_token`, and `expires_in`.
 - Use `POST /auth/login` with the same credentials and confirm a `200` response.

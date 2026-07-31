@@ -68,8 +68,8 @@ func TestSwaggerDocIsServedOutsideProduction(t *testing.T) {
 	if err := json.NewDecoder(rec.Body).Decode(&spec); err != nil {
 		t.Fatalf("failed to decode Swagger doc: %v", err)
 	}
-	if spec["openapi"] != "3.0.0" {
-		t.Fatalf("expected OpenAPI version 3.0.0, got %v", spec["openapi"])
+	if spec["swagger"] != "2.0" {
+		t.Fatalf("expected Swagger version 2.0, got %v", spec["swagger"])
 	}
 }
 
