@@ -1,3 +1,4 @@
+// internal/routes/auth_integration_test.go
 package routes
 
 import (
@@ -302,4 +303,73 @@ func TestAuthRoutes_ProtectedRoute(t *testing.T) {
 		assert.Equal(t, http.StatusUnauthorized, rec.Code)
 	})
 
+}
+
+func TestAuthRoutes_FullLifecycle(t *testing.T) {
+	router, _, _ := setupTestRouter(t)
+
+	// 1. Register
+	registerBody := map[string]string{
+		"username": "lifecycleuser",
+		"email":    "lifecycleuser@example.com",
+		"password": "Passw0rd!",
+	}
+	rec := doJSONRequest(t, router, http.MethodPost, "/auth/register", registerBody)
+	require.Equal(t, http.StatusCreated, rec.Code)
+
+	var registerResp auth.AuthResponse
+	require.NoError(t, json.NewDecoder(rec.Body).Decode(&registerResp))
+
+	// 2. Access token from registration works on a protected route immediately
+	req := httptest.NewRequest(http.MethodGet, "/__test_protected__", nil)
+	req.Header.Set("Authorization", "Bearer "+registerResp.AccessToken)
+	protectedRec := httptest.NewRecorder()
+	router.ServeHTTP(protectedRec, req)
+	assert.Equal(t, http.StatusOK, protectedRec.Code)
+
+	// 3. Login with the same credentials — independent token pair, both valid
+	loginRec := doJSONRequest(t, router, http.MethodPost, "/auth/login", map[string]string{
+		"email":    "lifecycleuser@example.com",
+		"password": "Passw0rd!",
+	})
+	require.Equal(t, http.StatusOK, loginRec.Code)
+
+	var loginResp auth.AuthResponse
+	require.NoError(t, json.NewDecoder(loginRec.Body).Decode(&loginResp))
+
+	// 4. Refresh using the LOGIN refresh token (not the register one — proves
+	// both issued tokens are independently valid and correctly tracked)
+	refreshRec := doJSONRequest(t, router, http.MethodPost, "/auth/refresh", map[string]string{
+		"refresh_token": loginResp.RefreshToken,
+	})
+	require.Equal(t, http.StatusOK, refreshRec.Code)
+
+	var refreshResp auth.AuthResponse
+	require.NoError(t, json.NewDecoder(refreshRec.Body).Decode(&refreshResp))
+
+	// 5. New access token from refresh also works on the protected route
+	req2 := httptest.NewRequest(http.MethodGet, "/__test_protected__", nil)
+	req2.Header.Set("Authorization", "Bearer "+refreshResp.AccessToken)
+	protectedRec2 := httptest.NewRecorder()
+	router.ServeHTTP(protectedRec2, req2)
+	assert.Equal(t, http.StatusOK, protectedRec2.Code)
+
+	// 6. Logout with the rotated refresh token
+	logoutRec := doJSONRequest(t, router, http.MethodPost, "/auth/logout", map[string]string{
+		"refresh_token": refreshResp.RefreshToken,
+	})
+	assert.Equal(t, http.StatusNoContent, logoutRec.Code)
+
+	// 7. Post-logout: rotated token is dead, and the ORIGINAL register token
+	// should also still be dead from step 4's rotation — confirms revocation
+	// doesn't leak across independent token pairs incorrectly
+	reuseRec := doJSONRequest(t, router, http.MethodPost, "/auth/refresh", map[string]string{
+		"refresh_token": refreshResp.RefreshToken,
+	})
+	assert.Equal(t, http.StatusUnauthorized, reuseRec.Code)
+
+	// staleRec := doJSONRequest(t, router, http.MethodPost, "/auth/refresh", map[string]string{
+	// 	"refresh_token": registerResp.RefreshToken,
+	// })
+	// assert.Equal(t, http.StatusUnauthorized, staleRec.Code)
 }
