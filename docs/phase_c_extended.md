@@ -133,7 +133,7 @@ D10: Integration Test Suite + Docs Close-Out
 - Handler returns **403**, not 404, when a list exists but belongs to a different user. 404 would tell an attacker whether the resource exists at all — 403 doesn't leak that.
 - Handlers stay thin per architecture overview: validate via DTO, call service, map result/error to response, nothing else.
 
-**Tests:** One handler smoke test per route to confirm routing and DTO serialization wire correctly. Full behavioral coverage lives in the service unit tests, not duplicated here — see §5.
+**Tests:** Full handler integration test suite — every route, happy path and error paths (validation failure, not-found, cross-user 403), through the real stack per PDR §14.1. Paired with full service unit tests covering the same cases at the service layer. See §5.
 
 **Acceptance criteria:**
 - `POST/GET/PUT/DELETE /lists` and `GET /lists/:listId` all work end-to-end
@@ -199,7 +199,7 @@ D10: Integration Test Suite + Docs Close-Out
 - `DELETE /subscribers/:subscriberId` calls `Unsubscribe`, not a hard delete — same soft-delete reasoning as D5, decided at the service layer.
 - Cross-user access returns `403`, same as list handler.
 
-**Tests:** One handler smoke test per route. Full behavioral coverage lives in service unit tests — see §5.
+**Tests:** Full handler integration test suite — every route, happy path and error paths (validation failure, not-found, cross-user 403, duplicate email → 409), through the real stack per PDR §14.1. Paired with full service unit tests covering the same cases at the service layer. See §5.
 
 **Acceptance criteria:**
 - `POST/GET/PUT/DELETE /subscribers` and `GET /subscribers/:subscriberId` all work end-to-end
@@ -313,19 +313,15 @@ D10: Integration Test Suite + Docs Close-Out
 
 ---
 
-## 5. Testing & Coverage Recap (scoped down from Phase B's default)
+## 5. Testing & Coverage Recap
 
-The parent PDR's default is unit tests for every service method and integration tests for every handler. For this phase, that's more than the risk profile justifies — most of these endpoints are structurally identical CRUD with a `userID` filter, and Phase B already proved the ownership-scoping pattern works. Full exhaustive integration coverage on every route here would mostly be re-proving the same pattern.
+**Baseline, every deliverable that has one: full service unit tests + full handler integration tests.** Not smoke tests, not a sampled subset — every service method gets a real unit test against the test DB (happy path + error paths: not-found, cross-user 403, duplicate/conflict where applicable), and every handler gets a real integration test through the full stack (`net/http/httptest` → service → repository → real MySQL, per PDR §14.1 — no mocking, same rule as Phase B). This applies to D3 (list) and D6 (subscriber) as the two CRUD modules, and to D8 (membership) as its own handler surface.
 
-**What gets full coverage: the service layer.** This is where the business rules live — soft delete, duplicate handling, CSV row validation, batch transaction behavior. Every service method (D3, D6, D7, D8) gets a real unit test against the test DB. No mocking the DB or Redis, per PDR §14.1 — same rule as Phase B.
+**On top of that baseline, extra tests land only where a specific piece of logic actually needs them** — not as a default, as an exception:
+- **D7 (CSV import)** gets dedicated tests beyond the standard service/handler pair, because skip-and-report batch semantics are genuinely novel logic in this phase (mixed valid/duplicate/invalid rows in one request, verifying the three counters independently) — this isn't covered by a generic "call the endpoint, check the response" test.
+- **D8 (membership)** gets one additional round-trip test (add → confirm via GET → remove → confirm gone) on top of its standard handler tests, because it's the one place two resources interact through a join table, and that interaction is worth proving end-to-end once rather than trusting it from the individual repository tests alone.
 
-**What gets targeted integration coverage — not exhaustive:**
-
-1. **Cross-user access, once per resource type** (D3, D6). One test hitting another user's list, one hitting another user's subscriber, asserting `403`. This is the test that actually matters this phase — it proves the ownership-scoping pattern works end-to-end through the handler, not just in isolation in the service test. Not repeated per-endpoint; if it holds for one read and one write path per resource, it holds for the rest, because they share the same repository method shape.
-2. **CSV import happy path + one mixed-failure batch** (D7). Already specified in D7's own test section above.
-3. **List membership add/remove round-trip** (D8). Already specified in D8's own test section above.
-
-Everything else — basic create/read/update on lists and subscribers individually — is covered by service-layer unit tests plus one handler smoke test per module (D3, D6) to confirm routing and DTO serialization are wired correctly, not a full matrix of every status code on every endpoint.
+Nothing else gets test coverage beyond the standard service-unit + handler-integration baseline unless a similar case for "this is genuinely different logic" can be made — the CSV and membership additions above are the bar, not the exception that swallows the rule.
 
 **Coverage target:** 70% baseline (service layer), no auth-style carve-out — this is not the auth module.
 

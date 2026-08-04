@@ -1,4 +1,4 @@
-package lists
+package list
 
 import (
 	"errors"
@@ -11,14 +11,12 @@ import (
 var validate = newValidator()
 
 type CreateListRequest struct {
-	PublicID    string `json:"public_id" validate:"required"`
 	Name        string `json:"name" validate:"required,min=1"`
 	Description string `json:"description"`
 }
 
 type UpdateListRequest struct {
-	PublicID    string `json:"public_id" validate:"required"`
-	Name        string `json:"name"`
+	Name        string `json:"name" validate:"omitempty,min=1"`
 	Description string `json:"description"`
 }
 
@@ -58,7 +56,7 @@ func translateErr(err error) error {
 		case "required":
 			return fmt.Errorf("%s is required", field)
 		case "min":
-			return fmt.Errorf("%s must be at least %s character", field, firstErr.Param())
+			return fmt.Errorf("%s must be at least %s characters", field, firstErr.Param())
 		default:
 			return fmt.Errorf("%s is invalid", field)
 		}
