@@ -26,7 +26,7 @@ type RegisterRequest struct {
 
 type LoginRequest struct {
 	Email    string `json:"email" validate:"required,email"`
-	Password string `json:"password" validate:"required,min=8,secure_password"`
+	Password string `json:"password" validate:"required"`
 }
 
 type RefreshRequest struct {
@@ -76,7 +76,8 @@ func newValidator() *validator.Validate {
 	return v
 }
 
-// translate the error - the first error from the srray of errmsg should be displayed in human readable form
+// translate the error - the first error from the
+// array of errmsg should be displayed in human readable form
 
 func translateErr(err error) error {
 
