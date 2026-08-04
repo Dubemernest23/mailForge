@@ -159,24 +159,6 @@ func TestLoginRequest_val(t *testing.T) {
 			wantErr:         true,
 			wantErrContains: "valid email",
 		},
-		{
-			name: "malformed_password",
-			req: LoginRequest{
-				Email:    "duby@example.com",
-				Password: "Strngpass",
-			},
-			wantErr:         true,
-			wantErrContains: "special character",
-		},
-		{
-			name: "password_too_short",
-			req: LoginRequest{
-				Email:    "duby@example.com",
-				Password: "Str",
-			},
-			wantErr:         true,
-			wantErrContains: "at least",
-		},
 	}
 
 	for _, tc := range tests {

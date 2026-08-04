@@ -19,8 +19,8 @@ type User struct {
 	Status                      string         `bun:"status,notnull,default:'active'"`
 	FailedLoginAttempts         uint32         `bun:"failed_login_attempts,notnull,default:0"`
 	PasswordResetToken          sql.NullString `bun:"password_reset_token"`
-	PasswordResetTokenExpiresAt sql.NullTime   `bun:"password_reset_expires_at,null"`
-	LastLoginAt                 sql.NullTime   `bun:"last_login_at,null"`
+	PasswordResetTokenExpiresAt sql.NullTime   `bun:"password_reset_expires_at,nullzero"`
+	LastLoginAt                 sql.NullTime   `bun:"last_login_at,nullzero"`
 	CreatedAt                   time.Time      `bun:"created_at,notnull"`
 	UpdatedAt                   time.Time      `bun:"updated_at,notnull"`
 }
