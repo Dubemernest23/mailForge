@@ -98,3 +98,11 @@ Everything else (basic create/read/update on lists and subscribers individually)
 ## Open Decision Before D5
 
 CSV row-failure semantics: **skip-and-report** (recommended, matches the summary object shape) vs. **fail-whole-batch**. This has to be locked before D5 starts — it changes both the service contract and the response DTO.
+
+
+gofmt -l . 
+go vet ./...
+golangci-lint run ./...
+make swag && git status internal/docs/
+go build ./...
+go test ./... -cover -p 1

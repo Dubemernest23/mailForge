@@ -23,6 +23,32 @@ func CreateTestUser(db *bun.DB) (*models.User, error) {
 	return user, nil
 }
 
+func CreateTestList(
+	db *bun.DB,
+	userID uint64,
+	name string,
+) (*models.List, error) {
+
+	list, err := BuildTestList(name)
+	if err != nil {
+		return nil, err
+	}
+
+	list.UserID = userID
+
+	ctx := context.Background()
+
+	_, err = db.NewInsert().
+		Model(list).
+		Exec(ctx)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return list, nil
+}
+
 func CreateTestUserWithPassword(db *bun.DB, plaintextPassword string) (*models.User, error) {
 	user, err := BuildTestUserWithPassword(plaintextPassword)
 	if err != nil {

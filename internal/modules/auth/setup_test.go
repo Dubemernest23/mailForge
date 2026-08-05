@@ -13,8 +13,9 @@ import (
 func setup(t *testing.T) AuthRepo {
 
 	t.Helper()
+	// ctx := context.Background()
 
-	err := testutils.CleanTables(testDB)
+	err := testutils.CleanTables(t.Context(), testDB)
 
 	require.NoError(t, err)
 
@@ -24,7 +25,7 @@ func setup(t *testing.T) AuthRepo {
 func setupService(t *testing.T) *Service {
 
 	t.Helper()
-	err := testutils.CleanTables(testDB)
+	err := testutils.CleanTables(t.Context(), testDB)
 	require.NoError(t, err)
 
 	repo := NewAuthRepository(testDB)

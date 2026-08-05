@@ -43,6 +43,21 @@ func BuildTestUser() (*models.User, error) {
 	}, nil
 }
 
+func BuildTestList(name string) (*models.List, error) {
+	publicID, err := randomPublicID()
+	if err != nil {
+		return nil, err
+	}
+
+	return &models.List{
+		PublicID:    publicID,
+		Name:        name,
+		Description: "for wedding invites to well wishers",
+		Status:      "active",
+		CreatedAt:   time.Now(),
+	}, nil
+}
+
 func BuildTestUserWithPassword(plaintextPassword string) (*models.User, error) {
 	user, err := BuildTestUser()
 	if err != nil {
