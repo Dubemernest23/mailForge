@@ -26,9 +26,10 @@ func CreateTestUser(db *bun.DB) (*models.User, error) {
 func CreateTestList(
 	db *bun.DB,
 	userID uint64,
+	name string,
 ) (*models.List, error) {
 
-	list, err := BuildTestList()
+	list, err := BuildTestList(name)
 	if err != nil {
 		return nil, err
 	}

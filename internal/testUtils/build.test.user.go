@@ -43,7 +43,7 @@ func BuildTestUser() (*models.User, error) {
 	}, nil
 }
 
-func BuildTestList() (*models.List, error) {
+func BuildTestList(name string) (*models.List, error) {
 	publicID, err := randomPublicID()
 	if err != nil {
 		return nil, err
@@ -51,9 +51,10 @@ func BuildTestList() (*models.List, error) {
 
 	return &models.List{
 		PublicID:    publicID,
-		Name:        "wedding invites",
+		Name:        name,
 		Description: "for wedding invites to well wishers",
 		Status:      "active",
+		CreatedAt:   time.Now(),
 	}, nil
 }
 
