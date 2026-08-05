@@ -29,7 +29,7 @@ import (
 func setupTestRouter(t *testing.T) (*chi.Mux, *rsa.PublicKey, *rsa.PrivateKey) {
 	t.Helper()
 
-	require.NoError(t, testutils.CleanTables(testDB))
+	require.NoError(t, testutils.CleanTables(t.Context(), testDB))
 
 	privateKey, publicKey, err := testutils.TestKeyPair() // reuse whatever key-gen helper you settled on earlier
 	require.NoError(t, err)
